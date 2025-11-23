@@ -514,11 +514,30 @@ with threat_tab1:
                             st.write(f"**Memory Usage:** {proc['memory_percent']:.1f}%")
                             st.write(f"**Threat Level:** {'CRITICAL' if proc['threat_score'] >= 70 else 'HIGH' if proc['threat_score'] >= 50 else 'MEDIUM'}")
                             
-                            if st.button(f"🛑 Terminate Process", key=f"kill_{proc['pid']}"):
-                                if terminate_suspicious_process(proc['pid'], f"High threat score: {proc['threat_score']}"):
-                                    st.success(f"✅ Process {proc['pid']} terminated")
-                                else:
-                                    st.error(f"❌ Failed to terminate process {proc['pid']}")
+                            st.warning("⚠️ **Terminating processes can cause system instability. Only terminate if you're certain this is malware.**")
+                            
+                            confirm_key = f"confirm_{proc['pid']}"
+                            if confirm_key not in st.session_state:
+                                st.session_state[confirm_key] = False
+                            
+                            if not st.session_state[confirm_key]:
+                                if st.button(f"⚠️ Request Termination", key=f"request_{proc['pid']}"):
+                                    st.session_state[confirm_key] = True
+                                    st.rerun()
+                            else:
+                                st.error(f"**Are you absolutely sure you want to terminate {proc['name']} (PID: {proc['pid']})?**")
+                                col_confirm, col_cancel = st.columns(2)
+                                with col_confirm:
+                                    if st.button(f"✅ Yes, Terminate", key=f"kill_{proc['pid']}", type="primary"):
+                                        if terminate_suspicious_process(proc['pid'], f"High threat score: {proc['threat_score']}"):
+                                            st.success(f"✅ Process {proc['pid']} terminated")
+                                            st.session_state[confirm_key] = False
+                                        else:
+                                            st.error(f"❌ Failed to terminate process {proc['pid']}")
+                                with col_cancel:
+                                    if st.button(f"❌ Cancel", key=f"cancel_{proc['pid']}"):
+                                        st.session_state[confirm_key] = False
+                                        st.rerun()
                 else:
                     st.success("✅ No suspicious processes detected - System clean!")
     

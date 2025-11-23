@@ -20,6 +20,7 @@ TIME_WINDOW_SECONDS = 60
 class RansomwareDetector:
     def __init__(self):
         self.file_modification_tracker = defaultdict(list)
+        self.file_mtime_cache = {}
         self.backup_directory = '/tmp/quantum_security_backups'
         os.makedirs(self.backup_directory, exist_ok=True)
     
@@ -28,18 +29,31 @@ class RansomwareDetector:
         return ext.lower() in RANSOMWARE_EXTENSIONS
     
     def track_file_modification(self, filepath):
-        current_time = time.time()
-        parent_dir = os.path.dirname(filepath)
+        if not os.path.exists(filepath):
+            return 0
         
-        self.file_modification_tracker[parent_dir].append(current_time)
-        
-        recent_modifications = [
-            t for t in self.file_modification_tracker[parent_dir]
-            if current_time - t <= TIME_WINDOW_SECONDS
-        ]
-        self.file_modification_tracker[parent_dir] = recent_modifications
-        
-        return len(recent_modifications)
+        try:
+            current_mtime = os.path.getmtime(filepath)
+            current_time = time.time()
+            parent_dir = os.path.dirname(filepath)
+            
+            if filepath in self.file_mtime_cache:
+                if current_mtime > self.file_mtime_cache[filepath]:
+                    self.file_modification_tracker[parent_dir].append(current_time)
+            else:
+                pass
+            
+            self.file_mtime_cache[filepath] = current_mtime
+            
+            recent_modifications = [
+                t for t in self.file_modification_tracker[parent_dir]
+                if current_time - t <= TIME_WINDOW_SECONDS
+            ]
+            self.file_modification_tracker[parent_dir] = recent_modifications
+            
+            return len(recent_modifications)
+        except Exception:
+            return 0
     
     def detect_rapid_encryption(self, directory):
         if directory not in self.file_modification_tracker:
