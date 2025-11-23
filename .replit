@@ -2,6 +2,7 @@ modules = ["python-3.11"]
 
 [nix]
 channel = "stable-25_05"
+packages = ["cairo", "catch2", "ffmpeg-full", "fmt", "freetype", "ghostscript", "gobject-introspection", "gtk3", "muparserx", "nlohmann_json", "pkg-config", "qhull", "spdlog", "tcl", "tk"]
 
 [deployment]
 deploymentTarget = "autoscale"
