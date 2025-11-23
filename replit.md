@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project is a Quantum Entanglement Self-Healing Security System built with Streamlit. It leverages quantum computing principles, specifically Bell state entanglement (|φ⁺⟩ = 1/√2 (|00⟩ + |11⟩)), to create a security monitoring and self-healing system. The application uses IBM's Qiskit framework to simulate quantum circuits and detect security anomalies through quantum state measurements. The system maintains entropy measurements, tracks attack patterns, and implements self-healing mechanisms by resetting to secure quantum states when compromises are detected.
+This project is a Quantum Entanglement Self-Healing Security System built with Streamlit. It leverages quantum computing principles, specifically Bell state entanglement (|φ⁺⟩ = 1/√2 (|00⟩ + |11⟩)), to create a security monitoring and self-healing system with persistent file protection. The application uses IBM's Qiskit framework to simulate quantum circuits and detect security anomalies through quantum state measurements. The system maintains entropy measurements, tracks attack patterns, implements self-healing mechanisms, and monitors real file integrity. All security data persists to PostgreSQL, ensuring continuity across sessions.
 
 ## User Preferences
 
@@ -34,6 +34,12 @@ Preferred communication style: Simple, everyday language.
   - Entropy calculation engine for detecting quantum state anomalies
   - Attack detection through measurement distribution analysis
   - Self-healing mechanisms triggered by quantum decoherence detection
+  - Real file integrity monitoring with SHA-256 checksums
+- **Database Layer**:
+  - PostgreSQL database for persistent storage
+  - SQLAlchemy ORM for database operations
+  - Tables: system_state, security_events, quantum_measurements, monitored_files
+  - All quantum data and security events persisted across sessions
 - **Data Processing**: NumPy for numerical computations and state vector analysis
 
 ### Core Design Patterns

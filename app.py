@@ -8,30 +8,68 @@ import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 from datetime import datetime
 import time
+import os
+
+from database import init_db, get_db, SecurityEvent, QuantumMeasurement, SystemState, get_or_create_system_state
+from file_monitor import add_monitored_file, scan_all_monitored_files, get_all_monitored_files, remove_monitored_file
+
+init_db()
 
 st.set_page_config(page_title="Quantum Security System", layout="wide")
 
 st.title("🔐 Quantum Entanglement Self-Healing Security System")
-st.markdown("### Bell State |φ⁺⟩ = 1/√2 (|00⟩ + |11⟩)")
+st.markdown("### Bell State |φ⁺⟩ = 1/√2 (|00⟩ + |11⟩) - Now with Persistent File Protection")
 
-if 'attack_log' not in st.session_state:
-    st.session_state.attack_log = []
-if 'system_resets' not in st.session_state:
-    st.session_state.system_resets = 0
-if 'measurements' not in st.session_state:
-    st.session_state.measurements = {'00': 0, '11': 0, 'other': 0}
-if 'quantum_intact' not in st.session_state:
-    st.session_state.quantum_intact = True
+if 'db_initialized' not in st.session_state:
+    db = get_db()
+    try:
+        sys_state = get_or_create_system_state(db)
+        st.session_state.system_version = sys_state.system_version
+        st.session_state.system_resets = sys_state.total_resets
+        st.session_state.quantum_intact = sys_state.quantum_intact
+        
+        security_events = db.query(SecurityEvent).order_by(SecurityEvent.timestamp.desc()).limit(50).all()
+        st.session_state.attack_log = [
+            {
+                'timestamp': event.timestamp.strftime("%H:%M:%S"),
+                'event': event.event_type,
+                'reason': event.reason
+            }
+            for event in reversed(security_events)
+        ]
+        
+        recent_measurements = db.query(QuantumMeasurement).order_by(QuantumMeasurement.timestamp.desc()).limit(100).all()
+        st.session_state.entropy_storage = [qm.entropy_key for qm in reversed(recent_measurements)]
+        st.session_state.secure_data_store = [
+            {
+                'timestamp': qm.timestamp.strftime("%H:%M:%S.%f")[:-3],
+                'entropy_key': qm.entropy_key,
+                'hash': qm.data_hash,
+                'correlation': qm.correlation,
+                'measurements': qm.measurements
+            }
+            for qm in reversed(recent_measurements)
+        ]
+        
+        all_measurements = db.query(QuantumMeasurement).all()
+        measurements_dict = {'00': 0, '11': 0, 'other': 0}
+        for qm in all_measurements:
+            if qm.measurements:
+                for state, count in qm.measurements.items():
+                    if state in ['00', '11']:
+                        measurements_dict[state] += count
+                    else:
+                        measurements_dict['other'] += count
+        st.session_state.measurements = measurements_dict
+        
+        st.session_state.db_initialized = True
+    finally:
+        db.close()
+
 if 'last_attack_results' not in st.session_state:
     st.session_state.last_attack_results = None
 if 'under_attack' not in st.session_state:
     st.session_state.under_attack = False
-if 'entropy_storage' not in st.session_state:
-    st.session_state.entropy_storage = []
-if 'secure_data_store' not in st.session_state:
-    st.session_state.secure_data_store = []
-if 'system_version' not in st.session_state:
-    st.session_state.system_version = 1
 
 def create_bell_state():
     qr = QuantumRegister(2, 'q')
@@ -94,23 +132,41 @@ def simulate_attack(qc):
     
     return counts
 
-def store_quantum_data_with_entropy(counts, timestamp):
+def store_quantum_data_with_entropy(counts, timestamp, is_attack=False):
     entropy = calculate_entropy(counts)
     
     data_hash = int(entropy * 1000) % 256
+    correlation = (counts.get('00', 0) + counts.get('11', 0)) / sum(counts.values()) * 100
+    
+    entropy_float = float(entropy)
+    correlation_float = float(correlation)
     
     data_entry = {
         'timestamp': timestamp,
-        'entropy_key': entropy,
+        'entropy_key': entropy_float,
         'hash': data_hash,
-        'correlation': (counts.get('00', 0) + counts.get('11', 0)) / sum(counts.values()) * 100,
+        'correlation': correlation_float,
         'measurements': counts
     }
     
-    st.session_state.entropy_storage.append(entropy)
+    st.session_state.entropy_storage.append(entropy_float)
     st.session_state.secure_data_store.append(data_entry)
     
-    return entropy
+    db = get_db()
+    try:
+        qm = QuantumMeasurement(
+            entropy_key=entropy_float,
+            data_hash=data_hash,
+            correlation=correlation_float,
+            measurements=counts,
+            is_attack=is_attack
+        )
+        db.add(qm)
+        db.commit()
+    finally:
+        db.close()
+    
+    return entropy_float
 
 def upgrade_system():
     st.session_state.system_version += 1
@@ -119,6 +175,22 @@ def upgrade_system():
         'event': 'System Upgrade',
         'reason': f'Upgraded to version {st.session_state.system_version} - Quantum coherence maintained'
     })
+    
+    db = get_db()
+    try:
+        sys_state = get_or_create_system_state(db)
+        sys_state.system_version = st.session_state.system_version
+        sys_state.last_updated = datetime.utcnow()
+        
+        event = SecurityEvent(
+            event_type='System Upgrade',
+            reason=f'Upgraded to version {st.session_state.system_version} - Quantum coherence maintained',
+            system_version=st.session_state.system_version
+        )
+        db.add(event)
+        db.commit()
+    finally:
+        db.close()
 
 def detect_attack(counts):
     total = sum(counts.values())
@@ -164,6 +236,10 @@ def classical_processing(measurement_results, is_attack_data=False):
         if not is_attack_data:
             timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
             store_quantum_data_with_entropy(measurement_results, timestamp)
+            
+            for state, count in measurement_results.items():
+                st.session_state.measurements[state] = st.session_state.measurements.get(state, 0) + count
+            
             st.success(f"✅ Data secured with entropy key")
 
 def auto_reset_system():
@@ -176,6 +252,24 @@ def auto_reset_system():
     st.session_state.quantum_intact = True
     st.session_state.under_attack = False
     st.session_state.last_attack_results = None
+    
+    db = get_db()
+    try:
+        sys_state = get_or_create_system_state(db)
+        sys_state.total_resets = st.session_state.system_resets
+        sys_state.quantum_intact = True
+        sys_state.last_updated = datetime.utcnow()
+        
+        event = SecurityEvent(
+            event_type='System Auto-Reset',
+            reason='Quantum state restored to Bell state',
+            system_version=st.session_state.system_version
+        )
+        db.add(event)
+        db.commit()
+    finally:
+        db.close()
+    
     st.rerun()
 
 col_left, col_right = st.columns([2, 1])
@@ -250,17 +344,33 @@ with col_attack:
         st.session_state.last_attack_results = attack_counts
         
         timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
-        attack_entropy = store_quantum_data_with_entropy(attack_counts, timestamp)
+        attack_entropy = store_quantum_data_with_entropy(attack_counts, timestamp, is_attack=True)
         
+        attack_reason = f'Eavesdropper introduced decoherence - Data secured with entropy {attack_entropy:.4f}'
         st.session_state.attack_log.append({
             'timestamp': datetime.now().strftime("%H:%M:%S"),
             'event': 'Attack Detected',
-            'reason': f'Eavesdropper introduced decoherence - Data secured with entropy {attack_entropy:.4f}'
+            'reason': attack_reason
         })
         
-        if detect_attack(attack_counts):
-            st.session_state.quantum_intact = False
-            st.session_state.under_attack = True
+        db = get_db()
+        try:
+            sys_state = get_or_create_system_state(db)
+            event = SecurityEvent(
+                event_type='Attack Detected',
+                reason=attack_reason,
+                system_version=st.session_state.system_version
+            )
+            db.add(event)
+            
+            if detect_attack(attack_counts):
+                st.session_state.quantum_intact = False
+                st.session_state.under_attack = True
+                sys_state.quantum_intact = False
+            
+            db.commit()
+        finally:
+            db.close()
         
         st.rerun()
 
@@ -379,6 +489,69 @@ else:
 
 st.divider()
 
+st.subheader("📁 File Integrity Monitor - Real Security Protection")
+st.markdown("**Monitor actual files and detect unauthorized changes using quantum-secured checksums**")
+
+col_file1, col_file2 = st.columns([2, 1])
+
+with col_file1:
+    st.markdown("**Add File to Monitor**")
+    new_file = st.text_input("File path to monitor:", placeholder="/path/to/important/file.txt")
+    
+    if st.button("➕ Add File", use_container_width=True):
+        if new_file and os.path.exists(new_file):
+            monitored, is_new = add_monitored_file(new_file)
+            if is_new:
+                st.success(f"✅ Now monitoring: {new_file}")
+                db = get_db()
+                try:
+                    event = SecurityEvent(
+                        event_type='File Added',
+                        reason=f'Started monitoring file: {new_file}',
+                        system_version=st.session_state.system_version
+                    )
+                    db.add(event)
+                    db.commit()
+                finally:
+                    db.close()
+                st.rerun()
+            else:
+                st.error("File already being monitored")
+        elif new_file:
+            st.error("File does not exist")
+
+with col_file2:
+    st.markdown("**Security Scan**")
+    if st.button("🔍 Scan All Files", use_container_width=True, type="primary"):
+        results = scan_all_monitored_files()
+        compromised = [r for r in results if r['integrity']['compromised']]
+        if compromised:
+            for result in compromised:
+                st.warning(f"⚠️ CHANGE DETECTED: {result['file_path']}")
+                st.text(f"Entropy drift: {result['integrity']['entropy_drift']:.4f}")
+                st.text(f"Hash changed: {result['integrity']['hash_changed']}")
+            st.error(f"🚨 {len(compromised)} file(s) modified!")
+        else:
+            st.success("✅ All files intact - No changes detected")
+
+st.markdown("**Monitored Files**")
+monitored = get_all_monitored_files()
+if monitored:
+    for file in monitored:
+        col_f1, col_f2, col_f3 = st.columns([3, 2, 1])
+        with col_f1:
+            st.text(f"📄 {file.file_path}")
+        with col_f2:
+            st.text(f"Added: {file.created_at.strftime('%Y-%m-%d %H:%M')}")
+        with col_f3:
+            if st.button("🗑️", key=f"remove_{file.id}"):
+                remove_monitored_file(file.id)
+                st.rerun()
+else:
+    st.info("No files being monitored yet. Add files above to start protecting them.")
+
+st.divider()
+
 st.markdown("""
 ### 🔬 How This Quantum Security System Works
 
@@ -389,6 +562,7 @@ st.markdown("""
 5. **Attack Detection**: Eavesdropping introduces decoherence, breaking the perfect Bell correlation
 6. **Auto-Reset**: System detects correlation drop and automatically restores to original quantum state
 7. **System Upgrades**: Can upgrade versions over time while maintaining quantum coherence and all stored data
+8. **File Monitoring**: Real file integrity checking with quantum-secured checksums stored in PostgreSQL
 
 **Key Innovation**: The algorithm creates a quantum matrix that BREAKS upon collapse (attack) BUT the data 
 is ALWAYS PRESERVED through entropy-based secure storage. The quantum state resets, but information persists.
