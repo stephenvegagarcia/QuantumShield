@@ -53,6 +53,45 @@ class SystemState(Base):
     quantum_intact = Column(Boolean, default=True)
     last_updated = Column(DateTime, default=datetime.utcnow)
 
+class ProcessEvent(Base):
+    __tablename__ = 'process_events'
+    
+    id = Column(Integer, primary_key=True, index=True)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+    process_name = Column(String(255))
+    process_id = Column(Integer)
+    cpu_percent = Column(Float)
+    memory_percent = Column(Float)
+    threat_score = Column(Float, default=0.0)
+    is_suspicious = Column(Boolean, default=False)
+    details = Column(JSON)
+
+class ThreatSignature(Base):
+    __tablename__ = 'threat_signatures'
+    
+    id = Column(Integer, primary_key=True, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    threat_type = Column(String(50))
+    signature_pattern = Column(Text)
+    severity = Column(String(20))
+    file_extensions = Column(JSON)
+    process_names = Column(JSON)
+    behavior_patterns = Column(JSON)
+    detection_count = Column(Integer, default=0)
+    last_detected = Column(DateTime, nullable=True)
+
+class AutomatedResponse(Base):
+    __tablename__ = 'automated_responses'
+    
+    id = Column(Integer, primary_key=True, index=True)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+    threat_id = Column(Integer, nullable=True)
+    response_type = Column(String(50))
+    action_taken = Column(Text)
+    target = Column(String(500))
+    success = Column(Boolean, default=True)
+    details = Column(JSON)
+
 def init_db():
     Base.metadata.create_all(bind=engine)
 

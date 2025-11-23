@@ -10,8 +10,10 @@ from datetime import datetime
 import time
 import os
 
-from database import init_db, get_db, SecurityEvent, QuantumMeasurement, SystemState, get_or_create_system_state
+from database import init_db, get_db, SecurityEvent, QuantumMeasurement, SystemState, get_or_create_system_state, ProcessEvent, AutomatedResponse
 from file_monitor import add_monitored_file, scan_all_monitored_files, get_all_monitored_files, remove_monitored_file
+from malware_detector import scan_running_processes, terminate_suspicious_process, get_suspicious_processes_history, get_recent_automated_responses
+from ransomware_detector import ransomware_detector
 
 init_db()
 
@@ -486,6 +488,130 @@ if st.session_state.secure_data_store:
         st.plotly_chart(entropy_trend, use_container_width=True)
 else:
     st.info("No data secured yet. Normal measurements will be automatically stored with entropy keys.")
+
+st.divider()
+
+st.subheader("🛡️ Active Threat Protection - Malware & Ransomware Defense")
+st.markdown("**Real-time monitoring with quantum-enhanced detection and automated response**")
+
+threat_tab1, threat_tab2, threat_tab3 = st.tabs(["🔴 Active Threats", "🦠 Process Monitor", "🔒 Ransomware Shield"])
+
+with threat_tab1:
+    st.markdown("### Live Threat Detection")
+    
+    col_scan1, col_scan2 = st.columns(2)
+    
+    with col_scan1:
+        if st.button("🔍 Scan for Malware", use_container_width=True, type="primary"):
+            with st.spinner("Scanning running processes..."):
+                suspicious = scan_running_processes()
+                
+                if suspicious:
+                    st.error(f"🚨 **{len(suspicious)} Suspicious Processes Detected!**")
+                    for proc in suspicious:
+                        with st.expander(f"⚠️ {proc['name']} (PID: {proc['pid']}) - Threat Score: {proc['threat_score']:.0f}"):
+                            st.write(f"**CPU Usage:** {proc['cpu_percent']:.1f}%")
+                            st.write(f"**Memory Usage:** {proc['memory_percent']:.1f}%")
+                            st.write(f"**Threat Level:** {'CRITICAL' if proc['threat_score'] >= 70 else 'HIGH' if proc['threat_score'] >= 50 else 'MEDIUM'}")
+                            
+                            if st.button(f"🛑 Terminate Process", key=f"kill_{proc['pid']}"):
+                                if terminate_suspicious_process(proc['pid'], f"High threat score: {proc['threat_score']}"):
+                                    st.success(f"✅ Process {proc['pid']} terminated")
+                                else:
+                                    st.error(f"❌ Failed to terminate process {proc['pid']}")
+                else:
+                    st.success("✅ No suspicious processes detected - System clean!")
+    
+    with col_scan2:
+        if st.button("🔎 Check for Ransomware", use_container_width=True, type="primary"):
+            with st.spinner("Scanning for ransomware activity..."):
+                ransom_threats = ransomware_detector.monitor_monitored_files()
+                
+                if ransom_threats:
+                    st.error(f"🚨 **{len(ransom_threats)} Ransomware Threats Detected!**")
+                    for threat in ransom_threats:
+                        st.warning(f"**{threat['severity']}**: {threat['type']}")
+                        st.text(f"File: {threat['file']}")
+                        st.text(f"Details: {threat['details']}")
+                else:
+                    st.success("✅ No ransomware activity detected!")
+    
+    st.markdown("### Recent Threat History")
+    suspicious_history = get_suspicious_processes_history(10)
+    if suspicious_history:
+        for proc in suspicious_history:
+            threat_level = "🔴" if proc.threat_score >= 70 else "🟠" if proc.threat_score >= 50 else "🟡"
+            st.text(f"{threat_level} {proc.timestamp.strftime('%H:%M:%S')} - {proc.process_name} (PID: {proc.process_id}) - Score: {proc.threat_score:.0f}")
+    else:
+        st.info("No threat history yet")
+
+with threat_tab2:
+    st.markdown("### System Process Monitoring")
+    
+    if st.button("📊 Refresh Process List", use_container_width=True):
+        with st.spinner("Scanning system processes..."):
+            scan_running_processes()
+            st.success("Process scan complete!")
+    
+    st.markdown("**Suspicious Process Patterns Monitored:**")
+    col_p1, col_p2 = st.columns(2)
+    
+    with col_p1:
+        st.markdown("""
+        - High CPU usage (>80%)
+        - High memory usage (>70%)
+        - Suspicious process names
+        - Excessive file access (>100 files)
+        """)
+    
+    with col_p2:
+        st.markdown("""
+        - Excessive network connections (>50)
+        - Known malware signatures
+        - Unauthorized system modifications
+        - Behavioral anomalies
+        """)
+    
+    db = get_db()
+    try:
+        recent_processes = db.query(ProcessEvent).order_by(ProcessEvent.timestamp.desc()).limit(20).all()
+        if recent_processes:
+            st.markdown("### Recent Process Activity")
+            for proc in recent_processes[:10]:
+                status = "🔴 SUSPICIOUS" if proc.is_suspicious else "🟢 Normal"
+                st.text(f"{status} - {proc.process_name} | CPU: {proc.cpu_percent:.1f}% | Mem: {proc.memory_percent:.1f}% | Score: {proc.threat_score:.0f}")
+    finally:
+        db.close()
+
+with threat_tab3:
+    st.markdown("### Ransomware Protection Status")
+    
+    col_r1, col_r2, col_r3 = st.columns(3)
+    
+    with col_r1:
+        st.metric("Protected Files", len(get_all_monitored_files()))
+    
+    with col_r2:
+        ransom_threats = ransomware_detector.get_recent_threats(100)
+        st.metric("Ransomware Blocks", len(ransom_threats))
+    
+    with col_r3:
+        responses = get_recent_automated_responses(100)
+        backups = [r for r in responses if r.response_type in ['File Backup', 'Emergency Backup']]
+        st.metric("Files Backed Up", len(backups))
+    
+    st.markdown("**Ransomware Extension Protection:**")
+    from ransomware_detector import RANSOMWARE_EXTENSIONS
+    st.info(f"Monitoring {len(RANSOMWARE_EXTENSIONS)} known ransomware file extensions")
+    
+    st.markdown("### Automated Response Log")
+    recent_responses = get_recent_automated_responses(10)
+    if recent_responses:
+        for response in recent_responses:
+            status_icon = "✅" if response.success else "❌"
+            st.text(f"{status_icon} {response.timestamp.strftime('%H:%M:%S')} - {response.response_type}: {response.action_taken}")
+    else:
+        st.info("No automated responses yet")
 
 st.divider()
 
