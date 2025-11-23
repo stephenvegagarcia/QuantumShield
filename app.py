@@ -267,6 +267,8 @@ with col_attack:
 with col_measure:
     st.subheader("🔄 System Controls")
     
+    st.metric("System Version", f"v{st.session_state.system_version}")
+    
     col_reset, col_upgrade = st.columns(2)
     
     with col_reset:
@@ -277,8 +279,6 @@ with col_measure:
         if st.button("⬆️ Upgrade", use_container_width=True):
             upgrade_system()
             st.rerun()
-    
-    st.metric("System Version", f"v{st.session_state.system_version}")
 
 st.divider()
 
