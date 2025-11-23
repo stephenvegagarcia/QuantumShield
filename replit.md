@@ -4,6 +4,32 @@
 
 This project is a Quantum Entanglement Self-Healing Security System built with Streamlit. It leverages quantum computing principles, specifically Bell state entanglement (|φ⁺⟩ = 1/√2 (|00⟩ + |11⟩)), to create a security monitoring and self-healing system with persistent file protection. The application uses IBM's Qiskit framework to simulate quantum circuits and detect security anomalies through quantum state measurements. The system maintains entropy measurements, tracks attack patterns, implements self-healing mechanisms, and monitors real file integrity. All security data persists to PostgreSQL, ensuring continuity across sessions.
 
+## Defense-in-Depth Philosophy: The Castle Structure
+
+**This system is designed as a secondary defense layer - like a castle protecting what's inside.**
+
+### Not a Primary Security System
+This system is **not meant to replace** your device's built-in security features:
+- Phone operating system security (iOS/Android sandboxing)
+- CPU-level security features (Intel SGX, ARM TrustZone)
+- Antivirus software or endpoint protection
+- Firewall and network security
+
+### Backup Security Layer
+Instead, this system serves as a **fallback protection layer** that activates when primary defenses fail:
+- **If your device's OS security is compromised** → This system detects file tampering
+- **If your CPU security features fail** → This system monitors malicious processes
+- **If your primary antivirus misses a threat** → This system catches suspicious behavior
+- **If ransomware bypasses device protection** → This system creates emergency backups
+
+### The Castle Analogy
+Think of it like medieval castle defenses:
+1. **Primary Defenses** (walls, moat) = Your device's built-in security
+2. **Secondary Defenses** (guard towers, backup gates) = This quantum security system
+3. **Last Resort** (keep, emergency escape routes) = File backups and automated responses
+
+**Key Principle:** When the first wall falls, the castle still stands. When your device's security fails, this system provides an additional layer of protection to minimize damage and enable recovery.
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.

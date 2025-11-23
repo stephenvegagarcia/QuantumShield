@@ -22,6 +22,33 @@ st.set_page_config(page_title="Quantum Security System", layout="wide")
 st.title("🔐 Quantum Entanglement Self-Healing Security System")
 st.markdown("### Bell State |φ⁺⟩ = 1/√2 (|00⟩ + |11⟩) - Now with Persistent File Protection")
 
+with st.expander("🏰 About This System: Defense-in-Depth Protection"):
+    st.markdown("""
+    **This is a secondary security layer - like a castle protecting what's inside.**
+    
+    #### Not a Replacement for Primary Security
+    This system does **not replace** your device's built-in protections:
+    - ❌ Phone OS security (iOS/Android)
+    - ❌ CPU security features (Intel SGX, ARM TrustZone)
+    - ❌ Primary antivirus software
+    - ❌ Firewall and network protection
+    
+    #### Backup Layer When Primary Defenses Fail
+    This system **activates when your primary defenses are compromised**:
+    - ✅ **Device OS fails** → We detect file tampering
+    - ✅ **CPU security bypassed** → We monitor malicious processes
+    - ✅ **Antivirus misses a threat** → We catch suspicious behavior
+    - ✅ **Ransomware gets through** → We create emergency backups
+    
+    #### The Castle Principle
+    Like medieval castle defenses with multiple walls:
+    1. **First Wall:** Your device's built-in security
+    2. **Second Wall:** This quantum security system ← You are here
+    3. **Keep (Last Resort):** File backups and automated recovery
+    
+    **When the first wall falls, the castle still stands.** This system ensures that even if your device's primary security is breached, you have another layer of protection watching for threats and ready to respond.
+    """)
+
 if 'db_initialized' not in st.session_state:
     db = get_db()
     try:
