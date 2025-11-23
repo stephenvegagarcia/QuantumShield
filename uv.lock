@@ -945,6 +945,12 @@ wheels = [
 ]
 
 [[package]]
+name = "pylatexenc"
+version = "2.10"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/5d/ab/34ec41718af73c00119d0351b7a2531d2ebddb51833a36448fc7b862be60/pylatexenc-2.10.tar.gz", hash = "sha256:3dd8fd84eb46dc30bee1e23eaab8d8fb5a7f507347b23e5f38ad9675c84f40d3", size = 162597, upload-time = "2021-04-06T07:56:07.854Z" }
+
+[[package]]
 name = "pyparsing"
 version = "3.2.5"
 source = { registry = "https://pypi.org/simple" }
@@ -1057,6 +1063,7 @@ dependencies = [
     { name = "matplotlib" },
     { name = "numpy" },
     { name = "plotly" },
+    { name = "pylatexenc" },
     { name = "qiskit" },
     { name = "qiskit-aer" },
     { name = "streamlit" },
@@ -1067,6 +1074,7 @@ requires-dist = [
     { name = "matplotlib", specifier = ">=3.10.7" },
     { name = "numpy", specifier = ">=2.3.5" },
     { name = "plotly", specifier = ">=6.5.0" },
+    { name = "pylatexenc", specifier = ">=2.10" },
     { name = "qiskit", specifier = ">=2.2.3" },
     { name = "qiskit-aer", specifier = ">=0.17.2" },
     { name = "streamlit", specifier = ">=1.51.0" },
