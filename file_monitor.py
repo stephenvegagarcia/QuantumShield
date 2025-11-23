@@ -107,7 +107,17 @@ def scan_all_monitored_files():
 def get_all_monitored_files():
     db = get_db()
     try:
-        return db.query(MonitoredFile).filter_by(is_active=True).all()
+        files = db.query(MonitoredFile).filter_by(is_active=True).order_by(MonitoredFile.created_at.desc()).all()
+        file_list = []
+        for f in files:
+            file_list.append({
+                'id': f.id,
+                'file_path': f.file_path,
+                'created_at': f.created_at,
+                'entropy_signature': f.entropy_signature,
+                'last_hash': f.last_hash
+            })
+        return file_list
     finally:
         db.close()
 

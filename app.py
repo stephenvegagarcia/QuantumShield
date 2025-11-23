@@ -671,26 +671,37 @@ with col_file1:
     new_file = st.text_input("File path to monitor:", placeholder="/path/to/important/file.txt")
     
     if st.button("➕ Add File", use_container_width=True):
-        if new_file and os.path.exists(new_file):
-            monitored, is_new = add_monitored_file(new_file)
-            if is_new:
-                st.success(f"✅ Now monitoring: {new_file}")
-                db = get_db()
+        if new_file:
+            if not os.path.exists(new_file):
                 try:
-                    event = SecurityEvent(
-                        event_type='File Added',
-                        reason=f'Started monitoring file: {new_file}',
-                        system_version=st.session_state.system_version
-                    )
-                    db.add(event)
-                    db.commit()
-                finally:
-                    db.close()
-                st.rerun()
-            else:
-                st.error("File already being monitored")
-        elif new_file:
-            st.error("File does not exist")
+                    os.makedirs(os.path.dirname(new_file), exist_ok=True)
+                    with open(new_file, 'w') as f:
+                        f.write("")
+                    st.info(f"📝 Created new file: {new_file}")
+                except Exception as e:
+                    st.error(f"❌ Could not create file: {str(e)}")
+                    new_file = None
+            
+            if new_file:
+                monitored, is_new = add_monitored_file(new_file)
+                if is_new:
+                    st.success(f"✅ Now monitoring: {new_file}")
+                    db = get_db()
+                    try:
+                        event = SecurityEvent(
+                            event_type='File Added',
+                            reason=f'Started monitoring file: {new_file}',
+                            system_version=st.session_state.system_version
+                        )
+                        db.add(event)
+                        db.commit()
+                    finally:
+                        db.close()
+                    st.rerun()
+                else:
+                    st.info("File already being monitored")
+        else:
+            st.error("Please enter a file path")
 
 with col_file2:
     st.markdown("**Security Scan**")
@@ -712,12 +723,12 @@ if monitored:
     for file in monitored:
         col_f1, col_f2, col_f3 = st.columns([3, 2, 1])
         with col_f1:
-            st.text(f"📄 {file.file_path}")
+            st.text(f"📄 {file['file_path']}")
         with col_f2:
-            st.text(f"Added: {file.created_at.strftime('%Y-%m-%d %H:%M')}")
+            st.text(f"Added: {file['created_at'].strftime('%Y-%m-%d %H:%M')}")
         with col_f3:
-            if st.button("🗑️", key=f"remove_{file.id}"):
-                remove_monitored_file(file.id)
+            if st.button("🗑️", key=f"remove_{file['id']}"):
+                remove_monitored_file(file['id'])
                 st.rerun()
 else:
     st.info("No files being monitored yet. Add files above to start protecting them.")
