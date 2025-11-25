@@ -1,0 +1,2 @@
+# QuantumShield
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c72e3e4b2d8d4176bb23efc29211c50b)](https://app.codacy.com/gh/stephenvegagarcia/QuantumShield?utm_source=github.com&utm_medium=referral&utm_content=stephenvegagarcia/QuantumShield&utm_campaign=Badge_Grade)
