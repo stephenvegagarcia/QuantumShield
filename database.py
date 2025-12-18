@@ -7,7 +7,9 @@ from datetime import datetime
 DATABASE_URL = os.getenv('DATABASE_URL')
 
 if not DATABASE_URL:
-    raise RuntimeError("DATABASE_URL environment variable is not set. Please configure your database connection.")
+    # Use SQLite as fallback for testing
+    DATABASE_URL = 'sqlite:///quantum_security.db'
+    print("WARNING: DATABASE_URL not set. Using SQLite fallback: quantum_security.db")
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
