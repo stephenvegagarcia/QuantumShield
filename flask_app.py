@@ -475,4 +475,7 @@ def terminate_process(pid):
     return jsonify({'success': success})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # Security: Debug mode should only be enabled in development
+    # Set DEBUG=1 environment variable to enable debug mode
+    debug_mode = os.getenv('DEBUG', 'False').lower() in ('true', '1', 'yes')
+    app.run(host='0.0.0.0', port=5000, debug=debug_mode)
