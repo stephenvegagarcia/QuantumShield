@@ -135,7 +135,9 @@ function scanFiles() {
                         <i class="fas fa-exclamation-triangle"></i> <strong>${data.compromised} file(s) modified!</strong><br>`;
                     
                     data.results.forEach(r => {
-                        resultHtml += `<small>${r.file_path} - Entropy drift: ${r.integrity.entropy_drift.toFixed(4)}</small><br>`;
+                        if (r.integrity && r.integrity.entropy_drift !== undefined) {
+                            resultHtml += `<small>${r.file_path} - Entropy drift: ${r.integrity.entropy_drift.toFixed(4)}</small><br>`;
+                        }
                     });
                     
                     resultHtml += '</div>';

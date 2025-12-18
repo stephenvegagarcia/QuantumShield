@@ -194,7 +194,7 @@
                             {% for entry in secure_data_store %}
                             <div class="card mb-2">
                                 <div class="card-body">
-                                    <h6>Entry {{ entry.timestamp }} - Hash: {{ "%03d"|format(entry.hash) }}</h6>
+                                    <h6>Entry {{ entry.timestamp }}</h6>
                                     <p><strong>Entropy Key:</strong> {{ "%.6f"|format(entry.entropy_key) }} bits</p>
                                     <p><strong>Correlation:</strong> {{ "%.2f"|format(entry.correlation) }}%</p>
                                     <p><strong>Data Hash:</strong> {{ "%03d"|format(entry.hash) }}</p>

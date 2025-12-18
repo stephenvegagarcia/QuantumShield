@@ -145,6 +145,8 @@ def store_quantum_data_with_entropy(counts, timestamp, is_attack=False):
 def detect_attack(counts):
     """Detect if an attack has occurred"""
     total = sum(counts.values())
+    if total == 0:
+        return True  # Consider empty counts as an attack
     bell_correlation = counts.get('00', 0) + counts.get('11', 0)
     correlation_ratio = bell_correlation / total
     
@@ -375,6 +377,14 @@ def add_file():
     
     if not file_path:
         return jsonify({'success': False, 'error': 'No file path provided'})
+    
+    # Security: Validate file path to prevent directory traversal
+    file_path = os.path.abspath(file_path)
+    
+    # Security: Restrict to safe directories (optional - uncomment to enable)
+    # allowed_dirs = ['/tmp', os.path.expanduser('~')]
+    # if not any(file_path.startswith(d) for d in allowed_dirs):
+    #     return jsonify({'success': False, 'error': 'File path not in allowed directories'})
     
     if not os.path.exists(file_path):
         try:

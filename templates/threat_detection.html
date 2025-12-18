@@ -268,6 +268,8 @@ function scanRansomware() {
 }
 
 function terminateProcess(pid, name) {
+    // Security Note: In production, this should check user permissions/authorization
+    // before allowing process termination. This is a demo/testing feature.
     if (confirm(`Are you absolutely sure you want to terminate ${name} (PID: ${pid})?\n\nThis can cause system instability!`)) {
         $.ajax({
             url: `/terminate-process/${pid}`,
