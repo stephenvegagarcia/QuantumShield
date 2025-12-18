@@ -1,13 +1,20 @@
 import os
+import logging
 from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, Boolean, Text, JSON
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 DATABASE_URL = os.getenv('DATABASE_URL')
 
 if not DATABASE_URL:
-    raise RuntimeError("DATABASE_URL environment variable is not set. Please configure your database connection.")
+    # Use SQLite as fallback for testing
+    DATABASE_URL = 'sqlite:///quantum_security.db'
+    logger.warning("DATABASE_URL not set. Using SQLite fallback: quantum_security.db")
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
