@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+
+{% block title %}Threat Detection{% endblock %}
+
+{% block content %}
+<div class="text-center mb-4">
+    <h1><i class="fas fa-shield-virus"></i> Active Threat Protection</h1>
+    <p class="lead">Real-time monitoring with quantum-enhanced detection and automated response</p>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-bug"></i> Scan for Malware
+            </div>
+            <div class="card-body">
+                <button class="btn btn-quantum btn-lg w-100" onclick="scanMalware()">
+                    <i class="fas fa-search"></i> Scan Running Processes
+                </button>
+                <div id="malware-result" class="mt-3"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-lock"></i> Check for Ransomware
+            </div>
+            <div class="card-body">
+                <button class="btn btn-quantum btn-lg w-100" onclick="scanRansomware()">
+                    <i class="fas fa-search"></i> Scan for Ransomware
+                </button>
+                <div id="ransomware-result" class="mt-3"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-chart-line"></i> Protection Statistics
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <div class="metric-card">
+                            <div class="metric-value">{{ monitored_files_count }}</div>
+                            <div class="metric-label">Protected Files</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="metric-card">
+                            <div class="metric-value">{{ suspicious_history|length }}</div>
+                            <div class="metric-label">Threats Detected</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="metric-card">
+                            <div class="metric-value">{{ recent_responses|length }}</div>
+                            <div class="metric-label">Automated Responses</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-info-circle"></i> Suspicious Process Patterns Monitored
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul>
+                            <li>High CPU usage (>80%)</li>
+                            <li>High memory usage (>70%)</li>
+                            <li>Suspicious process names</li>
+                            <li>Excessive file access (>100 files)</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul>
+                            <li>Excessive network connections (>50)</li>
+                            <li>Known malware signatures</li>
+                            <li>Unauthorized system modifications</li>
+                            <li>Behavioral anomalies</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-history"></i> Recent Threat History
+            </div>
+            <div class="card-body">
+                {% if suspicious_history %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Process Name</th>
+                                <th>PID</th>
+                                <th>Threat Score</th>
+                                <th>CPU %</th>
+                                <th>Memory %</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for proc in suspicious_history %}
+                            <tr>
+                                <td>{{ proc.timestamp.strftime('%H:%M:%S') }}</td>
+                                <td><code>{{ proc.process_name }}</code></td>
+                                <td>{{ proc.process_id }}</td>
+                                <td>
+                                    <span class="badge {% if proc.threat_score >= 70 %}bg-danger{% elif proc.threat_score >= 50 %}bg-warning{% else %}bg-info{% endif %}">
+                                        {{ "%.0f"|format(proc.threat_score) }}
+                                    </span>
+                                </td>
+                                <td>{{ "%.1f"|format(proc.cpu_percent) }}%</td>
+                                <td>{{ "%.1f"|format(proc.memory_percent) }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> No threat history yet
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-robot"></i> Automated Response Log
+            </div>
+            <div class="card-body">
+                {% if recent_responses %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Response Type</th>
+                                <th>Action Taken</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for response in recent_responses %}
+                            <tr>
+                                <td>{{ response.timestamp.strftime('%H:%M:%S') }}</td>
+                                <td><strong>{{ response.response_type }}</strong></td>
+                                <td>{{ response.action_taken }}</td>
+                                <td>
+                                    {% if response.success %}
+                                    <span class="badge bg-success"><i class="fas fa-check"></i> Success</span>
+                                    {% else %}
+                                    <span class="badge bg-danger"><i class="fas fa-times"></i> Failed</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> No automated responses yet
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function scanMalware() {
+    $('#malware-result').html('<div class="spinner-border" role="status"></div>');
+    
+    $.ajax({
+        url: '/scan-malware',
+        method: 'POST',
+        success: function(data) {
+            if (data.success) {
+                if (data.count > 0) {
+                    let html = `<div class="alert alert-danger">
+                        <strong><i class="fas fa-exclamation-triangle"></i> ${data.count} Suspicious Processes Detected!</strong>`;
+                    
+                    data.processes.forEach(proc => {
+                        html += `<div class="mt-2 p-2 border-start border-3 border-warning">
+                            <strong>${proc.name}</strong> (PID: ${proc.pid}) - Threat Score: ${proc.threat_score.toFixed(0)}<br>
+                            CPU: ${proc.cpu_percent.toFixed(1)}% | Memory: ${proc.memory_percent.toFixed(1)}%<br>
+                            <button class="btn btn-sm btn-danger mt-1" onclick="terminateProcess(${proc.pid}, '${proc.name}')">
+                                <i class="fas fa-skull-crossbones"></i> Terminate Process
+                            </button>
+                        </div>`;
+                    });
+                    
+                    html += '</div>';
+                    $('#malware-result').html(html);
+                } else {
+                    $('#malware-result').html(`
+                        <div class="alert alert-success">
+                            <i class="fas fa-check"></i> No suspicious processes detected - System clean!
+                        </div>
+                    `);
+                }
+            }
+        }
+    });
+}
+
+function scanRansomware() {
+    $('#ransomware-result').html('<div class="spinner-border" role="status"></div>');
+    
+    $.ajax({
+        url: '/scan-ransomware',
+        method: 'POST',
+        success: function(data) {
+            if (data.success) {
+                if (data.count > 0) {
+                    let html = `<div class="alert alert-danger">
+                        <strong><i class="fas fa-exclamation-triangle"></i> ${data.count} Ransomware Threats Detected!</strong>`;
+                    
+                    data.threats.forEach(threat => {
+                        html += `<div class="mt-2 p-2 border-start border-3 border-danger">
+                            <strong>${threat.severity}</strong>: ${threat.type}<br>
+                            File: <code>${threat.file}</code><br>
+                            Details: ${threat.details}
+                        </div>`;
+                    });
+                    
+                    html += '</div>';
+                    $('#ransomware-result').html(html);
+                } else {
+                    $('#ransomware-result').html(`
+                        <div class="alert alert-success">
+                            <i class="fas fa-check"></i> No ransomware activity detected!
+                        </div>
+                    `);
+                }
+            }
+        }
+    });
+}
+
+function terminateProcess(pid, name) {
+    if (confirm(`Are you absolutely sure you want to terminate ${name} (PID: ${pid})?\n\nThis can cause system instability!`)) {
+        $.ajax({
+            url: `/terminate-process/${pid}`,
+            method: 'POST',
+            data: {reason: `High threat score - Manual termination`},
+            success: function(data) {
+                if (data.success) {
+                    alert('Process terminated successfully');
+                    scanMalware();
+                } else {
+                    alert('Failed to terminate process');
+                }
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+
+{% block title %}Quantum Security Dashboard{% endblock %}
+
+{% block content %}
+<div class="text-center mb-4">
+    <h1><i class="fas fa-lock"></i> Quantum Entanglement Self-Healing Security System</h1>
+    <p class="lead">Bell State |φ⁺⟩ = 1/√2 (|00⟩ + |11⟩) - Now with Persistent File Protection</p>
+</div>
+
+<div class="alert alert-info alert-custom">
+    <h5><i class="fas fa-castle"></i> About This System: Defense-in-Depth Protection</h5>
+    <p><strong>This is a secondary security layer - like a castle protecting what's inside.</strong></p>
+    
+    <h6>Not a Replacement for Primary Security</h6>
+    <p>This system does <strong>not replace</strong> your device's built-in protections:</p>
+    <ul>
+        <li>❌ Phone OS security (iOS/Android)</li>
+        <li>❌ CPU security features (Intel SGX, ARM TrustZone)</li>
+        <li>❌ Primary antivirus software</li>
+        <li>❌ Firewall and network protection</li>
+    </ul>
+    
+    <h6>Backup Layer When Primary Defenses Fail</h6>
+    <p>This system <strong>activates when your primary defenses are compromised</strong>:</p>
+    <ul>
+        <li>✅ <strong>Device OS fails</strong> → We detect file tampering</li>
+        <li>✅ <strong>CPU security bypassed</strong> → We monitor malicious processes</li>
+        <li>✅ <strong>Antivirus misses a threat</strong> → We catch suspicious behavior</li>
+        <li>✅ <strong>Ransomware gets through</strong> → We create emergency backups</li>
+    </ul>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-atom"></i> Quantum Circuit - Bell State Creation
+            </div>
+            <div class="card-body text-center">
+                <img src="data:image/png;base64,{{ circuit_img }}" class="img-fluid" alt="Quantum Circuit">
+                <hr>
+                <p><strong>Circuit Breakdown:</strong></p>
+                <ul class="text-start">
+                    <li><strong>H Gate</strong> (Hadamard): Creates superposition on qubit 0 → 1/√2 (|0⟩ + |1⟩)</li>
+                    <li><strong>CNOT Gate</strong>: Entangles qubits 0 and 1</li>
+                    <li><strong>Result</strong>: Bell state |φ⁺⟩ = 1/√2 (|00⟩ + |11⟩)</li>
+                    <li><strong>Quantum Matrix</strong>: Creates perfect correlation - measuring both gives 00 or 11</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-shield-alt"></i> Security Status
+            </div>
+            <div class="card-body text-center">
+                {% if quantum_intact %}
+                <div class="status-badge status-secure mb-3">
+                    <i class="fas fa-check-circle"></i> SYSTEM SECURE
+                </div>
+                <p>Quantum entanglement active</p>
+                {% else %}
+                <div class="status-badge status-attack mb-3">
+                    <i class="fas fa-exclamation-triangle"></i> ATTACK DETECTED
+                </div>
+                <p>Auto-resetting...</p>
+                {% endif %}
+                
+                <hr>
+                <div class="metric-card mb-3">
+                    <div class="metric-value">{{ system_resets }}</div>
+                    <div class="metric-label">System Resets</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">{{ attack_count }}</div>
+                    <div class="metric-label">Attack Attempts</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-dice"></i> Simulate Attack
+            </div>
+            <div class="card-body">
+                <p>Attacking the system causes eavesdropping/measurement with decoherence</p>
+                <button class="btn btn-danger-custom btn-lg w-100" onclick="launchAttack()">
+                    <i class="fas fa-exclamation-circle"></i> Launch Attack
+                </button>
+                <div id="attack-result" class="mt-3"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-cogs"></i> System Controls
+            </div>
+            <div class="card-body">
+                <div class="mb-3 text-center">
+                    <strong>System Version:</strong> <span class="badge bg-primary">v{{ system_version }}</span>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <button class="btn btn-quantum w-100" onclick="resetSystem()">
+                            <i class="fas fa-sync"></i> Reset
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button class="btn btn-quantum w-100" onclick="upgradeSystem()">
+                            <i class="fas fa-arrow-up"></i> Upgrade
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-chart-bar"></i> Measurement Statistics
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <div class="metric-card">
+                            <div class="metric-value">{{ measurements['00'] }}</div>
+                            <div class="metric-label">Total |00⟩ Measurements</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="metric-card">
+                            <div class="metric-value">{{ measurements['11'] }}</div>
+                            <div class="metric-label">Total |11⟩ Measurements</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="metric-card">
+                            <div class="metric-value">{{ measurements['other'] }}</div>
+                            <div class="metric-label">Other States (Attack Indicator)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-scroll"></i> Attack Log & System Events
+            </div>
+            <div class="card-body">
+                {% if attack_log %}
+                    {% for log in attack_log %}
+                    <div class="log-entry">
+                        <strong>{{ log.timestamp }}</strong> - {{ log.event }}: {{ log.reason }}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No attacks detected yet. System is secure.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-database"></i> Secure Quantum Data Store - Persists Through Collapse
+            </div>
+            <div class="card-body">
+                <p><strong>Even when the quantum state collapses, the data remains secured with entropy keys</strong></p>
+                
+                <div class="row">
+                    <div class="col-md-8">
+                        <h6>Latest Secured Data Entries</h6>
+                        {% if secure_data_store %}
+                            {% for entry in secure_data_store %}
+                            <div class="card mb-2">
+                                <div class="card-body">
+                                    <h6>Entry {{ entry.timestamp }} - Hash: {{ "%03d"|format(entry.hash) }}</h6>
+                                    <p><strong>Entropy Key:</strong> {{ "%.6f"|format(entry.entropy_key) }} bits</p>
+                                    <p><strong>Correlation:</strong> {{ "%.2f"|format(entry.correlation) }}%</p>
+                                    <p><strong>Data Hash:</strong> {{ "%03d"|format(entry.hash) }}</p>
+                                    <p><strong>Measurements:</strong> {{ entry.measurements }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted">No data secured yet. Normal measurements will be automatically stored with entropy keys.</p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Data Storage Stats</h6>
+                        <div class="metric-card">
+                            <div class="metric-value">{{ total_secure_entries }}</div>
+                            <div class="metric-label">Total Secure Entries</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-flask"></i> How This Quantum Security System Works
+            </div>
+            <div class="card-body">
+                <ol>
+                    <li><strong>Quantum Matrix Creation:</strong> Uses H(0) → CNOT(0,1) to create entangled Bell state |φ⁺⟩</li>
+                    <li><strong>Perfect Correlation:</strong> The Bell state |φ⁺⟩ = 1/√2 (|00⟩ + |11⟩) ensures measurements are always 00 or 11</li>
+                    <li><strong>Entropy-Based Storage:</strong> ALL measurements (normal + attack) are secured with Shannon entropy keys</li>
+                    <li><strong>Data Persistence:</strong> Even when quantum state collapses from attack, data is preserved in classical storage</li>
+                    <li><strong>Attack Detection:</strong> Eavesdropping introduces decoherence, breaking the perfect Bell correlation</li>
+                    <li><strong>Auto-Reset:</strong> System detects correlation drop and automatically restores to original quantum state</li>
+                    <li><strong>System Upgrades:</strong> Can upgrade versions over time while maintaining quantum coherence and all stored data</li>
+                    <li><strong>File Monitoring:</strong> Real file integrity checking with quantum-secured checksums stored in PostgreSQL</li>
+                </ol>
+                <p><strong>Key Innovation:</strong> The algorithm creates a quantum matrix that BREAKS upon collapse (attack) BUT the data 
+                is ALWAYS PRESERVED through entropy-based secure storage. The quantum state resets, but information persists.</p>
+                <p>This demonstrates quantum security with classical data persistence - the perfect hybrid cybersecurity system.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function launchAttack() {
+    $('#attack-result').html('<div class="spinner-border" role="status"></div>');
+    
+    $.ajax({
+        url: '/attack',
+        method: 'POST',
+        success: function(data) {
+            if (data.success) {
+                let alertClass = data.compromised ? 'alert-danger' : 'alert-success';
+                let icon = data.compromised ? 'fa-exclamation-triangle' : 'fa-check-circle';
+                let message = data.compromised ? 'State Collapse - Triggering Reset' : 'Attack Failed - Entanglement Intact';
+                
+                $('#attack-result').html(`
+                    <div class="alert ${alertClass}">
+                        <i class="fas ${icon}"></i> ${message}<br>
+                        <strong>Correlation:</strong> ${data.correlation}<br>
+                        <strong>Entropy:</strong> ${data.entropy}<br>
+                        <strong>Measurements:</strong> ${JSON.stringify(data.measurements)}
+                    </div>
+                `);
+                
+                if (data.compromised) {
+                    setTimeout(() => location.reload(), 2000);
+                }
+            }
+        }
+    });
+}
+
+function resetSystem() {
+    $.ajax({
+        url: '/reset',
+        method: 'POST',
+        success: function(data) {
+            if (data.success) {
+                location.reload();
+            }
+        }
+    });
+}
+
+function upgradeSystem() {
+    $.ajax({
+        url: '/upgrade',
+        method: 'POST',
+        success: function(data) {
+            if (data.success) {
+                location.reload();
+            }
+        }
+    });
+}
+
+// Auto-measure on page load
+$(document).ready(function() {
+    $.get('/measure', function(data) {
+        console.log('Measurement complete:', data);
+    });
+});
+</script>
+{% endblock %}

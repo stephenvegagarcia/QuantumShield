@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}File Integrity Monitor{% endblock %}
+
+{% block content %}
+<div class="text-center mb-4">
+    <h1><i class="fas fa-folder-open"></i> File Integrity Monitor</h1>
+    <p class="lead">Monitor actual files and detect unauthorized changes using quantum-secured checksums</p>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-plus"></i> Add File to Monitor
+            </div>
+            <div class="card-body">
+                <form id="add-file-form">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="file_path" name="file_path" 
+                               placeholder="/path/to/important/file.txt" required>
+                        <button class="btn btn-quantum" type="submit">
+                            <i class="fas fa-plus-circle"></i> Add File
+                        </button>
+                    </div>
+                </form>
+                <div id="add-file-result" class="mt-3"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-search"></i> Security Scan
+            </div>
+            <div class="card-body text-center">
+                <button class="btn btn-quantum btn-lg w-100" onclick="scanFiles()">
+                    <i class="fas fa-search"></i> Scan All Files
+                </button>
+                <div id="scan-result" class="mt-3"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-list"></i> Monitored Files
+            </div>
+            <div class="card-body">
+                {% if monitored_files %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-file"></i> File Path</th>
+                                <th><i class="fas fa-clock"></i> Added</th>
+                                <th><i class="fas fa-fingerprint"></i> Entropy Signature</th>
+                                <th><i class="fas fa-cog"></i> Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for file in monitored_files %}
+                            <tr>
+                                <td><code>{{ file.file_path }}</code></td>
+                                <td>{{ file.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>{{ "%.4f"|format(file.entropy_signature) }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger" onclick="removeFile({{ file.id }})">
+                                        <i class="fas fa-trash"></i> Remove
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> No files being monitored yet. Add files above to start protecting them.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$('#add-file-form').on('submit', function(e) {
+    e.preventDefault();
+    
+    $('#add-file-result').html('<div class="spinner-border spinner-border-sm" role="status"></div>');
+    
+    $.ajax({
+        url: '/add-file',
+        method: 'POST',
+        data: $(this).serialize(),
+        success: function(data) {
+            if (data.success) {
+                let message = data.is_new ? 
+                    '<div class="alert alert-success"><i class="fas fa-check"></i> File added successfully!</div>' :
+                    '<div class="alert alert-info"><i class="fas fa-info"></i> File already being monitored</div>';
+                
+                $('#add-file-result').html(message);
+                
+                if (data.is_new) {
+                    setTimeout(() => location.reload(), 1500);
+                }
+            } else {
+                $('#add-file-result').html(`
+                    <div class="alert alert-danger">
+                        <i class="fas fa-times"></i> Error: ${data.error}
+                    </div>
+                `);
+            }
+        }
+    });
+});
+
+function scanFiles() {
+    $('#scan-result').html('<div class="spinner-border" role="status"></div>');
+    
+    $.ajax({
+        url: '/scan-files',
+        method: 'POST',
+        success: function(data) {
+            if (data.success) {
+                if (data.compromised > 0) {
+                    let resultHtml = `<div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i> <strong>${data.compromised} file(s) modified!</strong><br>`;
+                    
+                    data.results.forEach(r => {
+                        resultHtml += `<small>${r.file_path} - Entropy drift: ${r.integrity.entropy_drift.toFixed(4)}</small><br>`;
+                    });
+                    
+                    resultHtml += '</div>';
+                    $('#scan-result').html(resultHtml);
+                } else {
+                    $('#scan-result').html(`
+                        <div class="alert alert-success">
+                            <i class="fas fa-check"></i> All files intact - No changes detected
+                        </div>
+                    `);
+                }
+            }
+        }
+    });
+}
+
+function removeFile(fileId) {
+    if (confirm('Are you sure you want to stop monitoring this file?')) {
+        $.ajax({
+            url: `/remove-file/${fileId}`,
+            method: 'POST',
+            success: function(data) {
+                if (data.success) {
+                    location.reload();
+                }
+            }
+        });
+    }
+}
+</script>
+{% endblock %}
