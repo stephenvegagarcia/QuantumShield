@@ -57,7 +57,7 @@ QuantumShield is a quantum entanglement-based self-healing security system that 
 
 ### Database Conventions
 - Always use SQLAlchemy ORM, never raw SQL
-- Use the `get_db()` context manager for database sessions
+- Use the `get_db()` function to get database sessions: `db = get_db()`
 - Commit explicitly after modifications
 - Handle exceptions gracefully with try/except blocks
 - Log database errors using the logging module
@@ -92,9 +92,9 @@ QuantumShield is a quantum entanglement-based self-healing security system that 
 - Safe to call multiple times (idempotent)
 
 ### Session Management
-- Use `get_db()` context manager: `db = get_db()`
-- Always close sessions properly (context manager handles this)
-- Don't share sessions across requests
+- Use `get_db()` function: `db = get_db()`
+- Session cleanup is handled by the function's finally block
+- Don't share sessions across requests or threads
 
 ## Testing and Development
 
@@ -161,7 +161,7 @@ pip install -e .
 - Use `st.expander()` for detailed information sections
 - Prefer `st.columns()` for layout
 - Use `st.success()`, `st.warning()`, `st.error()` for user feedback
-- Cache expensive operations with `@st.cache_data` or `@st.cache_resource`
+- Cache expensive operations if needed (caching decorators available in Streamlit 1.18+)
 
 ### Flask (flask_app.py)
 - Follow RESTful conventions for API endpoints
