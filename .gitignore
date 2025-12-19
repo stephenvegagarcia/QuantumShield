@@ -4,6 +4,11 @@ __pycache__/
 *$py.class
 *.so
 
+# Python build artifacts
+*.egg-info/
+dist/
+build/
+
 # Database files
 *.db
 *.sqlite

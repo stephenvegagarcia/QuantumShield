@@ -38,12 +38,18 @@ def run_streamlit():
     print("💡 Press Ctrl+C to stop the application\n")
     
     try:
-        subprocess.run(["streamlit", "run", "app.py", "--server.port", "8501"])
+        subprocess.run(["streamlit", "run", "app.py", "--server.port", "8501"], check=True)
     except KeyboardInterrupt:
         print("\n\n✅ Application stopped successfully!")
     except FileNotFoundError:
-        print("\n❌ Error: Streamlit is not installed!")
+        print("\n❌ Error: Streamlit is not installed or not found in PATH!")
         print("💡 Install with: pip install streamlit")
+        sys.exit(1)
+    except subprocess.CalledProcessError as e:
+        print(f"\n❌ Error running Streamlit: {e}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"\n❌ Unexpected error: {e}")
         sys.exit(1)
 
 
@@ -54,11 +60,15 @@ def run_flask():
     print("💡 Press Ctrl+C to stop the application\n")
     
     try:
-        subprocess.run([sys.executable, "flask_app.py"])
+        # Run flask_app.py directly using Python
+        subprocess.run([sys.executable, "flask_app.py"], check=True)
     except KeyboardInterrupt:
         print("\n\n✅ Application stopped successfully!")
+    except subprocess.CalledProcessError as e:
+        print(f"\n❌ Error running Flask app: {e}")
+        sys.exit(1)
     except Exception as e:
-        print(f"\n❌ Error: {e}")
+        print(f"\n❌ Unexpected error: {e}")
         sys.exit(1)
 
 
