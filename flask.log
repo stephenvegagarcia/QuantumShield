@@ -1,0 +1,103 @@
+
+🌐 Cloud Environment Detected (Codespaces/Gitpod)
+Starting in HTTP mode for cloud compatibility
+
+Starting QuantumShield on HTTP://0.0.0.0:5000
+
+ * Serving Flask app 'flask_app'
+ * Debug mode: on
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.0.1.60:5000
+Press CTRL+C to quit
+ * Restarting with watchdog (inotify)
+ * Debugger is active!
+ * Debugger PIN: 826-456-983
+127.0.0.1 - - [20/Dec/2025 00:39:32] "GET /api/quantum/stats HTTP/1.1" 200 -
+ * Detected change in '/workspaces/QuantumShield/.venv/lib/python3.12/site-packages/pytz/__init__.py', reloading
+
+🌐 Cloud Environment Detected (Codespaces/Gitpod)
+Starting in HTTP mode for cloud compatibility
+
+Starting QuantumShield on HTTP://0.0.0.0:5000
+
+ * Restarting with watchdog (inotify)
+ * Debugger is active!
+ * Debugger PIN: 826-456-983
+ * Detected change in '/workspaces/QuantumShield/.venv/lib/python3.12/site-packages/pyarrow/orc.py', reloading
+
+🌐 Cloud Environment Detected (Codespaces/Gitpod)
+Starting in HTTP mode for cloud compatibility
+
+Starting QuantumShield on HTTP://0.0.0.0:5000
+
+ * Restarting with watchdog (inotify)
+ * Debugger is active!
+ * Debugger PIN: 826-456-983
+ * Detected change in '/workspaces/QuantumShield/.venv/lib/python3.12/site-packages/google/protobuf/any.py', reloading
+ * Detected change in '/workspaces/QuantumShield/.venv/lib/python3.12/site-packages/google/protobuf/__init__.py', reloading
+ * Detected change in '/workspaces/QuantumShield/.venv/lib/python3.12/site-packages/google/protobuf/any.py', reloading
+
+🌐 Cloud Environment Detected (Codespaces/Gitpod)
+Starting in HTTP mode for cloud compatibility
+
+Starting QuantumShield on HTTP://0.0.0.0:5000
+
+ * Restarting with watchdog (inotify)
+ * Debugger is active!
+ * Debugger PIN: 826-456-983
+ * Detected change in '/workspaces/QuantumShield/.venv/lib/python3.12/site-packages/packaging/__init__.py', reloading
+
+🌐 Cloud Environment Detected (Codespaces/Gitpod)
+Starting in HTTP mode for cloud compatibility
+
+Starting QuantumShield on HTTP://0.0.0.0:5000
+
+ * Restarting with watchdog (inotify)
+ * Debugger is active!
+ * Debugger PIN: 826-456-983
+ * Detected change in '/workspaces/QuantumShield/.venv/lib/python3.12/site-packages/narwhals/__init__.py', reloading
+ * Detected change in '/workspaces/QuantumShield/.venv/lib/python3.12/site-packages/narwhals/__init__.py', reloading
+
+🌐 Cloud Environment Detected (Codespaces/Gitpod)
+Starting in HTTP mode for cloud compatibility
+
+Starting QuantumShield on HTTP://0.0.0.0:5000
+
+ * Restarting with watchdog (inotify)
+ * Debugger is active!
+ * Debugger PIN: 826-456-983
+ * Detected change in '/workspaces/QuantumShield/.venv/lib/python3.12/site-packages/referencing/exceptions.py', reloading
+
+🌐 Cloud Environment Detected (Codespaces/Gitpod)
+Starting in HTTP mode for cloud compatibility
+
+Starting QuantumShield on HTTP://0.0.0.0:5000
+
+ * Restarting with watchdog (inotify)
+ * Debugger is active!
+ * Debugger PIN: 826-456-983
+ * Detected change in '/workspaces/QuantumShield/.venv/lib/python3.12/site-packages/pandas/tests/indexes/test_subclass.py', reloading
+ * Detected change in '/workspaces/QuantumShield/.venv/lib/python3.12/site-packages/pandas/tests/indexes/base_class/test_where.py', reloading
+ * Detected change in '/workspaces/QuantumShield/.venv/lib/python3.12/site-packages/pandas/tests/indexes/base_class/test_formats.py', reloading
+ * Detected change in '/workspaces/QuantumShield/.venv/lib/python3.12/site-packages/pandas/tests/indexes/base_class/test_reshape.py', reloading
+
+🌐 Cloud Environment Detected (Codespaces/Gitpod)
+Starting in HTTP mode for cloud compatibility
+
+Starting QuantumShield on HTTP://0.0.0.0:5000
+
+ * Restarting with watchdog (inotify)
+ * Debugger is active!
+ * Debugger PIN: 826-456-983
+ * Detected change in '/workspaces/QuantumShield/.venv/lib/python3.12/site-packages/jsonschema_specifications/__init__.py', reloading
+
+🌐 Cloud Environment Detected (Codespaces/Gitpod)
+Starting in HTTP mode for cloud compatibility
+
+Starting QuantumShield on HTTP://0.0.0.0:5000
+
+ * Restarting with watchdog (inotify)
+ * Debugger is active!
+ * Debugger PIN: 826-456-983

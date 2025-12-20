@@ -14,6 +14,7 @@ from database import init_db, get_db, SecurityEvent, QuantumMeasurement, SystemS
 from file_monitor import add_monitored_file, scan_all_monitored_files, get_all_monitored_files, remove_monitored_file
 from malware_detector import scan_running_processes, terminate_suspicious_process, get_suspicious_processes_history, get_recent_automated_responses
 from ransomware_detector import ransomware_detector
+from trusted_sources import trusted_sources_manager
 
 init_db()
 
@@ -732,6 +733,166 @@ if monitored:
                 st.rerun()
 else:
     st.info("No files being monitored yet. Add files above to start protecting them.")
+
+st.divider()
+
+# ===== TRUSTED SECURITY SOURCES SECTION =====
+st.header("🛡️ Trusted Security Sources & Verification")
+
+tab_verify, tab_manage, tab_stats = st.tabs(["🔍 Verify File/Domain", "📋 Manage Trusted Sources", "📊 Statistics"])
+
+with tab_verify:
+    st.markdown("### Verify Against Trusted Sources")
+    
+    verify_type = st.radio("Verification Type:", ["File Hash", "Domain", "File Trust Score"], horizontal=True)
+    
+    if verify_type == "File Hash":
+        col_v1, col_v2 = st.columns([3, 1])
+        with col_v1:
+            verify_file = st.text_input("Enter file path to verify:")
+        with col_v2:
+            st.markdown("<br>", unsafe_allow_html=True)
+            verify_btn = st.button("🔍 Verify Hash", type="primary")
+        
+        if verify_btn and verify_file:
+            result = trusted_sources_manager.verify_file_hash(verify_file)
+            if result['trusted']:
+                st.success(f"✅ TRUSTED: {result['reason']}")
+                st.code(f"Hash: {result['hash']}")
+                if 'category' in result:
+                    st.info(f"Category: {result['category']}")
+            else:
+                st.warning(f"⚠️ NOT TRUSTED: {result['reason']}")
+                if result['hash']:
+                    st.code(f"Hash: {result['hash']}")
+                    if st.button("➕ Add to Trusted Sources"):
+                        if trusted_sources_manager.add_trusted_hash(verify_file):
+                            st.success("Added to trusted hashes!")
+                            st.rerun()
+    
+    elif verify_type == "Domain":
+        col_v1, col_v2 = st.columns([3, 1])
+        with col_v1:
+            verify_domain = st.text_input("Enter domain to verify (e.g., github.com):")
+        with col_v2:
+            st.markdown("<br>", unsafe_allow_html=True)
+            verify_domain_btn = st.button("🔍 Verify Domain", type="primary")
+        
+        if verify_domain_btn and verify_domain:
+            result = trusted_sources_manager.verify_domain(verify_domain)
+            if result['trusted']:
+                st.success(f"✅ TRUSTED: {result['reason']}")
+                st.info(f"Category: {result['category']}")
+            else:
+                st.warning(f"⚠️ NOT TRUSTED: {result['reason']}")
+                if st.button("➕ Add to Trusted Domains"):
+                    if trusted_sources_manager.add_trusted_domain(verify_domain):
+                        st.success("Added to trusted domains!")
+                        st.rerun()
+    
+    else:  # File Trust Score
+        col_v1, col_v2 = st.columns([3, 1])
+        with col_v1:
+            trust_file = st.text_input("Enter file path for trust score:")
+        with col_v2:
+            st.markdown("<br>", unsafe_allow_html=True)
+            trust_btn = st.button("📊 Get Trust Score", type="primary")
+        
+        if trust_btn and trust_file:
+            result = trusted_sources_manager.get_trust_score(trust_file)
+            
+            # Display trust score with color coding
+            score = result['trust_score']
+            if score >= 80:
+                st.success(f"### Trust Score: {score}/100 - {result['recommendation']}")
+            elif score >= 50:
+                st.warning(f"### Trust Score: {score}/100 - {result['recommendation']}")
+            else:
+                st.error(f"### Trust Score: {score}/100 - {result['recommendation']}")
+            
+            # Display detailed checks
+            st.markdown("**Verification Details:**")
+            for check_name, check_result in result['checks'].items():
+                with st.expander(f"✓ {check_name.replace('_', ' ').title()}"):
+                    st.json(check_result)
+
+with tab_manage:
+    st.markdown("### Manage Trusted Sources")
+    
+    manage_type = st.selectbox("Select source type:", ["File Hashes", "Domains", "Certificates"])
+    
+    if manage_type == "File Hashes":
+        st.markdown("**Add New Trusted File**")
+        col_m1, col_m2 = st.columns([3, 1])
+        with col_m1:
+            new_file = st.text_input("File path:")
+        with col_m2:
+            st.markdown("<br>", unsafe_allow_html=True)
+            if st.button("➕ Add File"):
+                if new_file:
+                    if trusted_sources_manager.add_trusted_hash(new_file):
+                        st.success("✅ File hash added to trusted sources!")
+                        st.rerun()
+                    else:
+                        st.warning("File already trusted or unable to calculate hash")
+        
+        st.markdown("**Current Trusted Hashes**")
+        for category, hashes in trusted_sources_manager.trusted_hashes.items():
+            with st.expander(f"{category.replace('_', ' ').title()} ({len(hashes)} hashes)"):
+                for hash_val in hashes[:10]:  # Show first 10
+                    st.code(hash_val, language=None)
+                if len(hashes) > 10:
+                    st.info(f"... and {len(hashes) - 10} more")
+    
+    elif manage_type == "Domains":
+        st.markdown("**Add New Trusted Domain**")
+        col_m1, col_m2 = st.columns([3, 1])
+        with col_m1:
+            new_domain = st.text_input("Domain (e.g., example.com):")
+        with col_m2:
+            st.markdown("<br>", unsafe_allow_html=True)
+            if st.button("➕ Add Domain"):
+                if new_domain:
+                    if trusted_sources_manager.add_trusted_domain(new_domain):
+                        st.success("✅ Domain added to trusted sources!")
+                        st.rerun()
+                    else:
+                        st.warning("Domain already trusted")
+        
+        st.markdown("**Current Trusted Domains**")
+        for category, domains in trusted_sources_manager.trusted_domains.items():
+            with st.expander(f"{category.replace('_', ' ').title()} ({len(domains)} domains)"):
+                for domain in domains:
+                    st.text(f"🌐 {domain}")
+
+with tab_stats:
+    st.markdown("### Trust Sources Statistics")
+    
+    stats = trusted_sources_manager.get_all_trusted_sources()
+    
+    col_s1, col_s2, col_s3 = st.columns(3)
+    with col_s1:
+        st.metric("Total Trusted Hashes", sum(stats['trusted_hashes'].values()))
+        for category, count in stats['trusted_hashes'].items():
+            st.text(f"  • {category}: {count}")
+    
+    with col_s2:
+        st.metric("Total Trusted Domains", sum(stats['trusted_domains'].values()))
+        for category, count in stats['trusted_domains'].items():
+            st.text(f"  • {category}: {count}")
+    
+    with col_s3:
+        st.metric("Total Trusted Certificates", sum(stats['trusted_certificates'].values()))
+        for category, count in stats['trusted_certificates'].items():
+            st.text(f"  • {category}: {count}")
+    
+    st.divider()
+    st.markdown("**VirusTotal Integration**")
+    vt_api_key = st.text_input("VirusTotal API Key (optional):", type="password", 
+                                help="Enter your VirusTotal API key to enable online hash verification")
+    if vt_api_key:
+        os.environ['VIRUSTOTAL_API_KEY'] = vt_api_key
+        st.success("✅ VirusTotal API key configured!")
 
 st.divider()
 
