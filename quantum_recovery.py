@@ -5,7 +5,6 @@ Demonstrates quantum error correction using Bell states with QuTiP
 """
 import qutip as qt
 import numpy as np
-import random
 
 # Manual Gates
 H = qt.Qobj([[1, 1], [1, -1]]) / np.sqrt(2)
