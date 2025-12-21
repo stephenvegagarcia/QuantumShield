@@ -1,5 +1,7 @@
 # 🔐 QuantumShield
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/b3255340b75249fcb6a0409b5f26e984)](https://app.codacy.com/gh/stephenvegagarcia/QuantumShield?utm_source=github.com&utm_medium=referral&utm_content=stephenvegagarcia/QuantumShield&utm_campaign=Badge_Grade)
+
 **Quantum Entanglement Self-Healing Security System**
 
 A multi-layered security monitoring system that combines quantum computing principles, file integrity monitoring, process analysis, and automated threat response. QuantumShield provides both a web-based dashboard and a REST API for comprehensive security monitoring.
