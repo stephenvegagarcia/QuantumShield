@@ -359,6 +359,176 @@ with col2:
 
 st.divider()
 
+# Quantum Gate Visualizer Section
+st.subheader("⚛️ Quantum Gate Explorer - Interactive Gate Operations")
+
+from quantum_gate_viz import QuantumGateVisualizer, get_gate_description
+
+if 'gate_visualizer' not in st.session_state:
+    st.session_state.gate_visualizer = QuantumGateVisualizer()
+
+gate_viz_tab1, gate_viz_tab2, gate_viz_tab3 = st.tabs(["🎮 Gate Operations", "🔬 Gate Matrices", "🚀 Interactive Visualizer"])
+
+with gate_viz_tab1:
+    st.markdown("**Explore how different quantum gates transform quantum states**")
+    
+    col_gate1, col_gate2 = st.columns([1, 2])
+    
+    with col_gate1:
+        st.markdown("### Select Gates")
+        
+        gate_options = {
+            "BELL": "Bell State (Entangled)",
+            "HXXH": "H⊗H (Superposition)",
+            "CNOT": "CNOT (Entanglement)",
+            "CZ": "CZ (Phase Entanglement)",
+            "H": "Hadamard",
+            "X": "Pauli-X (NOT)",
+            "Y": "Pauli-Y",
+            "Z": "Pauli-Z"
+        }
+        
+        selected_gates = st.multiselect(
+            "Choose gates to compare:",
+            options=list(gate_options.keys()),
+            default=["BELL", "CNOT"],
+            format_func=lambda x: gate_options[x],
+            max_selections=3
+        )
+        
+        apply_noise_toggle = st.checkbox("Simulate Attack (Add Noise)", value=False)
+        
+        if st.button("🔄 Refresh Visualization", use_container_width=True):
+            st.rerun()
+        
+        st.markdown("---")
+        st.markdown("### Gate Descriptions")
+        for gate in selected_gates:
+            with st.expander(f"{gate_options[gate]}"):
+                st.markdown(get_gate_description(gate))
+    
+    with col_gate2:
+        if selected_gates:
+            try:
+                fig = st.session_state.gate_visualizer.plot_state_comparison(
+                    selected_gates, 
+                    apply_noise=apply_noise_toggle
+                )
+                st.pyplot(fig)
+                plt.close()
+                
+                # Show entropy values
+                st.markdown("### 📊 Quantum State Analysis")
+                entropy_cols = st.columns(len(selected_gates))
+                for idx, gate in enumerate(selected_gates):
+                    state = st.session_state.gate_visualizer.apply_gate(gate)
+                    entropy = st.session_state.gate_visualizer.calculate_entropy(
+                        state, 
+                        apply_noise=apply_noise_toggle
+                    )
+                    
+                    with entropy_cols[idx]:
+                        if apply_noise_toggle:
+                            if entropy > 0.05:
+                                st.error(f"**{gate}**")
+                                st.metric("Entropy", f"{entropy:.4f}", delta="Under Attack")
+                            else:
+                                st.success(f"**{gate}**")
+                                st.metric("Entropy", f"{entropy:.4f}", delta="Protected")
+                        else:
+                            st.info(f"**{gate}**")
+                            st.metric("Entropy", f"{entropy:.4f}")
+                
+            except Exception as e:
+                st.error(f"Error generating visualization: {str(e)}")
+        else:
+            st.info("👈 Select at least one gate from the left panel to visualize")
+
+with gate_viz_tab2:
+    st.markdown("**Matrix representations of single-qubit quantum gates**")
+    
+    col_matrix1, col_matrix2 = st.columns([1, 2])
+    
+    with col_matrix1:
+        single_gate_options = ["H", "X", "Y", "Z", "S", "P", "I"]
+        selected_matrix_gate = st.selectbox(
+            "Select a gate to view its matrix:",
+            options=single_gate_options,
+            format_func=lambda x: {
+                "H": "Hadamard", "X": "Pauli-X", "Y": "Pauli-Y", 
+                "Z": "Pauli-Z", "S": "S (π/2)", "P": "P (π/4)", "I": "Identity"
+            }[x]
+        )
+        
+        st.markdown("---")
+        st.markdown(get_gate_description(selected_matrix_gate))
+        
+        # Show mathematical representation
+        st.markdown("### Matrix Representation")
+        gate_matrices = {
+            "H": "1/√2 [[1, 1], [1, -1]]",
+            "X": "[[0, 1], [1, 0]]",
+            "Y": "[[0, -i], [i, 0]]",
+            "Z": "[[1, 0], [0, -1]]",
+            "S": "[[1, 0], [0, i]]",
+            "P": "[[1, 0], [0, e^(iπ/4)]]",
+            "I": "[[1, 0], [0, 1]]"
+        }
+        st.code(gate_matrices[selected_matrix_gate], language="python")
+    
+    with col_matrix2:
+        try:
+            fig = st.session_state.gate_visualizer.plot_gate_matrix(selected_matrix_gate)
+            if fig:
+                st.pyplot(fig)
+                plt.close()
+        except Exception as e:
+            st.error(f"Error plotting matrix: {str(e)}")
+
+with gate_viz_tab3:
+    st.markdown("**Launch the interactive 3D quantum gate visualizer**")
+    
+    col_info, col_launch = st.columns([2, 1])
+    
+    with col_info:
+        st.markdown("""
+        ### 🎮 Interactive Quantum Gate Defender
+        
+        Experience quantum gates in real-time with our PyGame-based visualizer!
+        
+        **Features:**
+        - 🌈 4D Tesseract visualization of quantum states
+        - ⚛️ Real-time quantum gate operations
+        - 🛡️ Interactive shield and attack simulation
+        - 📊 Live entropy monitoring
+        - 🎨 Color-coded gate modes
+        
+        **Controls:**
+        - `[S]` - Toggle quantum shield
+        - `[A]` - Toggle attack simulation
+        - `[1-6]` - Switch between gate modes
+        
+        **Note:** This will open a separate window with the interactive visualization.
+        """)
+    
+    with col_launch:
+        st.markdown("### Launch")
+        
+        if st.button("🚀 Launch Interactive Visualizer", type="primary", use_container_width=True):
+            success, message = st.session_state.gate_visualizer.launch_interactive_visualizer()
+            if success:
+                st.success(message)
+                st.info("Check for a new pygame window!")
+            else:
+                st.error(message)
+        
+        st.markdown("---")
+        st.markdown("### Alternative")
+        st.markdown("You can also run it directly:")
+        st.code("python quantum_gate_visualizer.py", language="bash")
+
+st.divider()
+
 col_attack, col_measure = st.columns(2)
 
 with col_attack:
