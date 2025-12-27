@@ -15,11 +15,11 @@ A multi-layered security monitoring system that combines quantum computing princ
 - 📊 **Real-Time Analytics**: Live statistics and threat visualization
 
 ### Technology Stack
-- **Quantum Computing**: Qiskit for quantum circuit simulation
+- **Quantum Computing**: Qiskit for quantum circuit simulation, QuTiP for quantum gate operations
 - **Backend**: Flask REST API + Streamlit Dashboard
 - **Database**: SQLAlchemy with PostgreSQL/SQLite support
 - **Monitoring**: psutil for system resource tracking
-- **Visualization**: Plotly, Matplotlib, Streamlit charts
+- **Visualization**: Plotly, Matplotlib, Streamlit charts, Pygame for interactive quantum visualizations
 
 ## 📋 System Requirements
 
@@ -84,26 +84,60 @@ streamlit run app.py
 - **Streamlit UI**: http://localhost:8501
 - **API Health Check**: http://localhost:5000/api/health
 
+### 5. Quantum Gate Visualizer (Interactive Demo)
+
+Experience quantum gates in action with our interactive visualizer:
+
+```bash
+python quantum_gate_visualizer.py
+```
+
+**Features:**
+- 🎮 **Interactive Controls**: Toggle shield, simulate attacks, switch between gate modes
+- 🌈 **4D Tesseract Visualization**: See quantum states in a rotating hypercube
+- ⚛️ **Multiple Gate Modes**: BELL, HXXH, CNOT, CZ, PAULI, PHASE
+- 📊 **Real-time Entropy Display**: Monitor quantum entanglement and decoherence
+- 🎨 **Color-coded Gates**: Each gate type has a unique visual signature
+
+**Controls:**
+- `[S]` - Toggle quantum shield (activate/deactivate)
+- `[A]` - Toggle attack simulation (add noise)
+- `[1-6]` - Switch between different quantum gate modes
+  - `[1]` - BELL state (entangled qubits)
+  - `[2]` - HXXH (Hadamard superposition)
+  - `[3]` - CNOT (Controlled-NOT)
+  - `[4]` - CZ (Controlled-Z phase)
+  - `[5]` - PAULI (X, Y, Z randomization)
+  - `[6]` - PHASE (S and P gates)
+
+**What it demonstrates:**
+- How quantum gates protect information through entanglement
+- Visual representation of quantum state decoherence under attack
+- Real-time entropy calculations showing quantum correlation
+- 4D projection of quantum states in a tesseract
+
 ## 📚 Documentation
 
 ### Project Structure
 
 ```
 QuantumShield/
-├── flask_app.py              # Flask REST API server
-├── app.py                    # Streamlit dashboard
-├── database.py               # Database models and setup
-├── file_monitor.py           # File integrity monitoring
-├── malware_detector.py       # Process and malware detection
-├── ransomware_detector.py    # Ransomware protection
-├── main.py                   # Legacy main entry point
-├── test_api.py              # API testing suite
-├── start_services.sh        # Service startup script
-├── stop_services.sh         # Service shutdown script
-├── pyproject.toml           # Python dependencies
-├── .env.example             # Environment template
-├── README_FLASK.md          # Flask API documentation
-└── README.md                # This file
+├── flask_app.py                 # Flask REST API server
+├── app.py                       # Streamlit dashboard
+├── quantum_gate_visualizer.py   # Interactive quantum gate visualization
+├── quantum_demo.py              # Quantum physics demonstration
+├── database.py                  # Database models and setup
+├── file_monitor.py              # File integrity monitoring
+├── malware_detector.py          # Process and malware detection
+├── ransomware_detector.py       # Ransomware protection
+├── main.py                      # Legacy main entry point
+├── test_api.py                  # API testing suite
+├── start_services.sh            # Service startup script
+├── stop_services.sh             # Service shutdown script
+├── pyproject.toml               # Python dependencies
+├── .env.example                 # Environment template
+├── README_FLASK.md              # Flask API documentation
+└── README.md                    # This file
 ```
 
 ### Database Schema
