@@ -6,7 +6,7 @@ Demonstrates quantum gates and entanglement using pygame and qutip
 import pygame
 import numpy as np
 from qutip import ket, tensor, ptrace, entropy_vn, sigmaz, sigmax, sigmay, qeye
-from qutip.qip.operations import hadamard_transform, snot, phasegate
+from qutip.qip.operations import hadamard_transform, phasegate
 import random
 
 # --- 1. Enhanced Quantum Gate Library ---
@@ -17,7 +17,7 @@ class QuantumGateSystem:
         self.Y = sigmay()               # Pauli-Y
         self.Z = sigmaz()               # Pauli-Z
         self.S = phasegate(np.pi / 2)   # S gate (Phase π/2)
-        self.P = phasegate(np.pi / 4)   # P gate (π/8 gate)
+        self.P = phasegate(np.pi / 4)   # P gate (π/4 gate)
         self.I = qeye(2)                # Identity
 
     def CNOT(self, control_qubit, target_qubit, num_qubits=2):
@@ -267,7 +267,7 @@ def main():
 
         gate_info = [
             "[1] BELL   : CNOT(H⊗I)|00⟩",
-            "[2] HXXH   : H⊗H⊗H⊗H Superposition",
+            "[2] HXXH   : H⊗H Superposition",
             "[3] CNOT   : Controlled-NOT Entangle",
             "[4] CZ     : Controlled-Z Phase",
             "[5] PAULI  : X,Y,Z Randomization",

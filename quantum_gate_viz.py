@@ -19,7 +19,7 @@ class QuantumGateVisualizer:
         self.Y = sigmay()               # Pauli-Y
         self.Z = sigmaz()               # Pauli-Z
         self.S = phasegate(np.pi / 2)   # S gate (Phase π/2)
-        self.P = phasegate(np.pi / 4)   # P gate (π/8 gate)
+        self.P = phasegate(np.pi / 4)   # P gate (π/4 gate)
         self.I = qeye(2)                # Identity
         
     def CNOT(self, control_qubit=0, target_qubit=1):
