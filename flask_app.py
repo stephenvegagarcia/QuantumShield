@@ -237,6 +237,54 @@ DASHBOARD_HTML = """
             <button class="btn-info" onclick="loadQuantumStats()">📊 View Quantum Data</button>
             <div id="quantumStats" style="margin-top: 20px;"></div>
         </div>
+        
+        <div class="card">
+            <h2>🌀 4D Quantum Gate Visualizer</h2>
+            <p>Interactive 4D tesseract visualization showing real-time quantum gate operations and entropy</p>
+            
+            <div style="display: grid; grid-template-columns: 200px 1fr; gap: 20px; margin-top: 20px;">
+                <div>
+                    <h3 style="font-size: 1.1em; margin-bottom: 15px;">Controls</h3>
+                    <button class="btn-primary" style="width: 100%; margin: 5px 0;" onclick="toggleShield()">
+                        🛡️ <span id="shieldStatus">Activate</span> Shield
+                    </button>
+                    <button class="btn-danger" style="width: 100%; margin: 5px 0;" onclick="toggleAttack()">
+                        ⚔️ <span id="attackStatus">Start</span> Attack
+                    </button>
+                    
+                    <h3 style="font-size: 1.1em; margin: 20px 0 10px 0;">Gate Modes</h3>
+                    <button class="btn-info" style="width: 100%; margin: 5px 0; font-size: 0.85em;" onclick="setGateMode('BELL')">BELL State</button>
+                    <button class="btn-info" style="width: 100%; margin: 5px 0; font-size: 0.85em;" onclick="setGateMode('HXXH')">H⊗H</button>
+                    <button class="btn-info" style="width: 100%; margin: 5px 0; font-size: 0.85em;" onclick="setGateMode('CNOT')">CNOT</button>
+                    <button class="btn-info" style="width: 100%; margin: 5px 0; font-size: 0.85em;" onclick="setGateMode('CZ')">CZ Phase</button>
+                    <button class="btn-info" style="width: 100%; margin: 5px 0; font-size: 0.85em;" onclick="setGateMode('PAULI')">Pauli XYZ</button>
+                    <button class="btn-info" style="width: 100%; margin: 5px 0; font-size: 0.85em;" onclick="setGateMode('PHASE')">S/P Gates</button>
+                </div>
+                
+                <div>
+                    <canvas id="quantumCanvas" width="800" height="500" style="background: rgba(0, 0, 0, 0.3); border-radius: 10px; width: 100%;"></canvas>
+                    
+                    <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                        <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px;">
+                            <div style="font-size: 0.85em; opacity: 0.8;">Gate Mode</div>
+                            <div id="currentGate" style="font-size: 1.3em; font-weight: bold; color: #60a5fa;">BELL</div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px;">
+                            <div style="font-size: 0.85em; opacity: 0.8;">Entropy S(ρ)</div>
+                            <div id="entropyValue" style="font-size: 1.3em; font-weight: bold; color: #34d399;">0.0000</div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px;">
+                            <div style="font-size: 0.85em; opacity: 0.8;">Status</div>
+                            <div id="vizStatus" style="font-size: 1.3em; font-weight: bold; color: #10b981;">⚠ UNPROTECTED</div>
+                        </div>
+                    </div>
+                    
+                    <div id="gateDescription" style="margin-top: 15px; padding: 15px; background: rgba(139, 92, 246, 0.1); border-radius: 8px; border-left: 4px solid #8b5cf6;">
+                        <strong>BELL State:</strong> Maximally entangled state 1/√2(|00⟩ + |11⟩) created by CNOT(H⊗I)|00⟩
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     
     <script>
@@ -635,6 +683,232 @@ DASHBOARD_HTML = """
                 container.innerHTML = '<p style="color: #ef4444;">Error loading quantum data: ' + error.message + '</p>';
             }
         }
+        
+        // 4D Quantum Gate Visualizer
+        let quantumViz = {
+            shieldActive: false,
+            attackActive: false,
+            gateMode: 'BELL',
+            angle: 0,
+            canvas: null,
+            ctx: null,
+            animationFrame: null,
+            
+            // 4D Hypercube points (16 vertices)
+            points: [],
+            
+            // Gate colors
+            gateColors: {
+                'BELL': [100, 150, 255],
+                'HXXH': [255, 200, 0],
+                'CNOT': [255, 100, 200],
+                'CZ': [150, 0, 255],
+                'PAULI': [255, 50, 50],
+                'PHASE': [0, 255, 200]
+            },
+            
+            // Gate thresholds
+            thresholds: {
+                'BELL': 0.02,
+                'HXXH': 0.05,
+                'CNOT': 0.03,
+                'CZ': 0.04,
+                'PAULI': 0.08,
+                'PHASE': 0.06
+            },
+            
+            // Gate descriptions
+            descriptions: {
+                'BELL': '<strong>BELL State:</strong> Maximally entangled state 1/√2(|00⟩ + |11⟩) created by CNOT(H⊗I)|00⟩',
+                'HXXH': '<strong>H⊗H Operation:</strong> Double Hadamard creates 4-state superposition',
+                'CNOT': '<strong>CNOT Gate:</strong> Controlled-NOT creates entanglement between qubits',
+                'CZ': '<strong>CZ Gate:</strong> Controlled-Z applies phase-based entanglement',
+                'PAULI': '<strong>Pauli Gates:</strong> X, Y, Z randomization for error correction',
+                'PHASE': '<strong>S/P Gates:</strong> Phase gates S(π/2) and P(π/4) for quantum algorithms'
+            },
+            
+            init: function() {
+                this.canvas = document.getElementById('quantumCanvas');
+                if (!this.canvas) return;
+                
+                this.ctx = this.canvas.getContext('2d');
+                
+                // Generate 4D hypercube points
+                for (let i = 0; i < 16; i++) {
+                    this.points.push({
+                        x: (i & 1) ? 1 : -1,
+                        y: (i & 2) ? 1 : -1,
+                        z: (i & 4) ? 1 : -1,
+                        w: (i & 8) ? 1 : -1
+                    });
+                }
+                
+                this.animate();
+            },
+            
+            calculateEntropy: function() {
+                // Simulate entropy based on mode and attack
+                let baseEntropy = 0.6929; // ln(2) for maximally entangled state
+                
+                if (this.attackActive) {
+                    const noiseLevel = 0.3 + Math.random() * 0.4;
+                    return baseEntropy * noiseLevel;
+                } else {
+                    return Math.random() * 0.01; // Very low entropy when no attack
+                }
+            },
+            
+            rotate4D: function(point, angle) {
+                // 4D rotation matrix
+                const c = Math.cos(angle);
+                const s = Math.sin(angle);
+                
+                const x = c * point.x - s * point.w;
+                const y = c * point.y - s * point.z;
+                const z = s * point.y + c * point.z;
+                const w = s * point.x + c * point.w;
+                
+                return {x, y, z, w};
+            },
+            
+            project3D: function(point4D, wDist) {
+                // Project from 4D to 3D
+                const scale = 1 / (wDist - point4D.w);
+                return {
+                    x: point4D.x * scale,
+                    y: point4D.y * scale,
+                    z: point4D.z * scale
+                };
+            },
+            
+            project2D: function(point3D) {
+                // Simple orthographic projection to 2D
+                const centerX = this.canvas.width / 2;
+                const centerY = this.canvas.height / 2;
+                const scale = 120;
+                
+                return {
+                    x: centerX + point3D.x * scale,
+                    y: centerY + point3D.y * scale
+                };
+            },
+            
+            animate: function() {
+                if (!this.ctx) return;
+                
+                // Clear canvas
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Calculate entropy
+                const entropy = this.calculateEntropy();
+                document.getElementById('entropyValue').textContent = entropy.toFixed(4);
+                
+                // Determine status and color
+                const threshold = this.thresholds[this.gateMode];
+                let status, statusColor;
+                
+                if (this.shieldActive) {
+                    if (entropy > threshold) {
+                        status = `⚡ ${this.gateMode} DEFLECTED`;
+                        statusColor = '#06b6d4'; // Cyan
+                    } else {
+                        status = `✓ ${this.gateMode} STABLE`;
+                        statusColor = '#10b981'; // Green
+                    }
+                } else {
+                    status = '⚠ UNPROTECTED';
+                    statusColor = '#9ca3af'; // Gray
+                }
+                
+                document.getElementById('vizStatus').textContent = status;
+                document.getElementById('vizStatus').style.color = statusColor;
+                
+                // Rotation parameters
+                const wDist = this.shieldActive ? 3.0 : 4.5;
+                const speedMult = this.gateMode === 'HXXH' ? 1.5 : 1.0;
+                
+                // Rotate and project points
+                const projected2D = [];
+                for (let point of this.points) {
+                    const rotated = this.rotate4D(point, this.angle);
+                    const proj3D = this.project3D(rotated, wDist);
+                    const proj2D = this.project2D(proj3D);
+                    projected2D.push(proj2D);
+                }
+                
+                // Get color for current gate mode
+                const baseColor = this.attackActive ? 
+                    (entropy > threshold ? [0, 255, 255] : [0, 255, 100]) : 
+                    this.gateColors[this.gateMode];
+                
+                const color = `rgb(${baseColor[0]}, ${baseColor[1]}, ${baseColor[2]})`;
+                const lineWidth = this.shieldActive ? 3 : 1;
+                const pointSize = this.shieldActive ? 4 : 2;
+                
+                // Draw connections (edges of hypercube)
+                this.ctx.strokeStyle = color;
+                this.ctx.lineWidth = lineWidth;
+                this.ctx.globalAlpha = 0.8;
+                
+                for (let i = 0; i < 16; i++) {
+                    for (let j = i + 1; j < 16; j++) {
+                        // Check if points are connected (differ by exactly 1 bit)
+                        const xor = i ^ j;
+                        const bitCount = xor.toString(2).split('1').length - 1;
+                        
+                        if (bitCount === 1) {
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(projected2D[i].x, projected2D[i].y);
+                            this.ctx.lineTo(projected2D[j].x, projected2D[j].y);
+                            this.ctx.stroke();
+                        }
+                    }
+                }
+                
+                // Draw vertices
+                this.ctx.fillStyle = color;
+                this.ctx.globalAlpha = 1.0;
+                
+                for (let point of projected2D) {
+                    this.ctx.beginPath();
+                    this.ctx.arc(point.x, point.y, pointSize, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+                
+                // Update angle
+                this.angle += 0.01 * speedMult;
+                
+                // Continue animation
+                this.animationFrame = requestAnimationFrame(() => this.animate());
+            },
+            
+            setGateMode: function(mode) {
+                this.gateMode = mode;
+                document.getElementById('currentGate').textContent = mode;
+                document.getElementById('gateDescription').innerHTML = this.descriptions[mode];
+            }
+        };
+        
+        function toggleShield() {
+            quantumViz.shieldActive = !quantumViz.shieldActive;
+            document.getElementById('shieldStatus').textContent = 
+                quantumViz.shieldActive ? 'Deactivate' : 'Activate';
+        }
+        
+        function toggleAttack() {
+            quantumViz.attackActive = !quantumViz.attackActive;
+            document.getElementById('attackStatus').textContent = 
+                quantumViz.attackActive ? 'Stop' : 'Start';
+        }
+        
+        function setGateMode(mode) {
+            quantumViz.setGateMode(mode);
+        }
+        
+        // Initialize visualizer when page loads
+        window.addEventListener('load', function() {
+            quantumViz.init();
+        });
         
         loadDashboard();
         setInterval(loadDashboard, 5000); // Refresh every 5 seconds
