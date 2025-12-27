@@ -74,7 +74,11 @@ while running:
     projected = []
     for p in points:
         p_rotated = np.dot(rot, p)
-        z = 1 / (w_dist - p_rotated[3][0])
+        # Prevent division by zero
+        denominator = w_dist - p_rotated[3][0]
+        if abs(denominator) < 0.01:
+            denominator = 0.01 if denominator >= 0 else -0.01
+        z = 1 / denominator
         p2d = np.dot(np.array([[z, 0, 0, 0], [0, z, 0, 0]]), p_rotated)
         projected.append((int(p2d[0][0] * 1500 + WIDTH // 2), 
                           int(p2d[1][0] * 1500 + HEIGHT // 2)))
