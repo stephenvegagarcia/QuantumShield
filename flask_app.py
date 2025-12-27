@@ -694,6 +694,9 @@ DASHBOARD_HTML = """
             ctx: null,
             animationFrame: null,
             
+            // Visual constants
+            LINE_ALPHA: 0.8,  // Transparency for hypercube edges
+            
             // 4D Hypercube points (16 vertices)
             points: [],
             
@@ -772,8 +775,9 @@ DASHBOARD_HTML = """
             },
             
             project3D: function(point4D, wDist) {
-                // Project from 4D to 3D
-                const scale = 1 / (wDist - point4D.w);
+                // Project from 4D to 3D with division-by-zero protection
+                const denominator = wDist - point4D.w;
+                const scale = denominator !== 0 ? 1 / denominator : 1;
                 return {
                     x: point4D.x * scale,
                     y: point4D.y * scale,
@@ -848,13 +852,19 @@ DASHBOARD_HTML = """
                 // Draw connections (edges of hypercube)
                 this.ctx.strokeStyle = color;
                 this.ctx.lineWidth = lineWidth;
-                this.ctx.globalAlpha = 0.8;
+                this.ctx.globalAlpha = this.LINE_ALPHA;
                 
                 for (let i = 0; i < 16; i++) {
                     for (let j = i + 1; j < 16; j++) {
                         // Check if points are connected (differ by exactly 1 bit)
                         const xor = i ^ j;
-                        const bitCount = xor.toString(2).split('1').length - 1;
+                        // Count set bits using bitwise AND trick
+                        let bitCount = 0;
+                        let n = xor;
+                        while (n) {
+                            n &= n - 1;
+                            bitCount++;
+                        }
                         
                         if (bitCount === 1) {
                             this.ctx.beginPath();
