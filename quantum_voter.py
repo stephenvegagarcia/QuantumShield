@@ -69,23 +69,40 @@ def init_voter_db() -> None:
 
 def save_idea(content: str, fingerprint: str, ai_note: str) -> None:
     """
-    Save an idea to the quantum voter network database
+    Save an idea to the quantum voter network database using atomic writes
     
     Args:
         content: The idea text content
         fingerprint: SHA-256 hash of the content
         ai_note: AI-generated advice for the idea
     """
-    with open(DB_FILE, 'r+') as f:
+    import tempfile
+    import shutil
+    
+    # Read current data
+    with open(DB_FILE, 'r') as f:
         data = json.load(f)
-        data.append({
-            "timestamp": time.ctime(),
-            "idea": content,
-            "hash": fingerprint,
-            "ai_note": ai_note
-        })
-        f.seek(0)
-        json.dump(data, f, indent=4)
+    
+    # Add new idea
+    data.append({
+        "timestamp": time.ctime(),
+        "idea": content,
+        "hash": fingerprint,
+        "ai_note": ai_note
+    })
+    
+    # Write to temporary file first (atomic operation)
+    temp_fd, temp_path = tempfile.mkstemp(dir=os.path.dirname(DB_FILE), text=True)
+    try:
+        with os.fdopen(temp_fd, 'w') as f:
+            json.dump(data, f, indent=4)
+        # Atomically replace the original file
+        shutil.move(temp_path, DB_FILE)
+    except Exception:
+        # Clean up temp file on error
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+        raise
 
 
 def get_all_ideas() -> List[Dict[str, Any]]:
