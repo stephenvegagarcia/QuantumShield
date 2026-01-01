@@ -11,9 +11,13 @@ from database import (
 )
 from security_encryption import AESEncryption
 from cybersecurity_training import CybersecurityTraining
+from quantum_voter import quantum_voter_bp
 
 app = Flask(__name__)
 CORS(app)
+
+# Register Quantum Voter Blueprint
+app.register_blueprint(quantum_voter_bp, url_prefix='/quantum-voter')
 
 # Initialize AES-256 encryption
 encryptor = AESEncryption()
@@ -187,6 +191,7 @@ DASHBOARD_HTML = """
                 <button class="btn-danger" onclick="simulateAttack('ransomware')">⚠️ Test Ransomware Detection</button>
                 <button class="btn-danger" onclick="simulateAttack('malware')">🦠 Test Malware Detection</button>
                 <button class="btn-info" onclick="loadDashboard()">🔄 Refresh Data</button>
+                <button class="btn-primary" onclick="window.location.href='/quantum-voter/'">🔮 Quantum Voter AI</button>
             </div>
             
             <div style="margin-top: 20px;">
