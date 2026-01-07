@@ -386,6 +386,9 @@ See [LICENSE](LICENSE) file for details.
 - **Flask**: Web framework
 - **Streamlit**: Dashboard framework
 - **SQLAlchemy**: Database ORM
+- **Replit**: Platform used for original development
+- **Gemini & Grok**: AI assistants used for research and understanding
+- **GitHub Copilot**: AI pair programming tool that refined the codebase
 
 ## 📧 Contact
 
