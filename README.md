@@ -15,11 +15,11 @@ A multi-layered security monitoring system that combines quantum computing princ
 - 📊 **Real-Time Analytics**: Live statistics and threat visualization
 
 ### Technology Stack
-- **Quantum Computing**: Qiskit for quantum circuit simulation
+- **Quantum Computing**: Qiskit for quantum circuit simulation, QuTiP for Bell state visualization
 - **Backend**: Flask REST API + Streamlit Dashboard
 - **Database**: SQLAlchemy with PostgreSQL/SQLite support
 - **Monitoring**: psutil for system resource tracking
-- **Visualization**: Plotly, Matplotlib, Streamlit charts
+- **Visualization**: Plotly, Matplotlib, Streamlit charts, Pygame for interactive demos
 
 ## 📋 System Requirements
 
@@ -84,6 +84,23 @@ streamlit run app.py
 - **Streamlit UI**: http://localhost:8501
 - **API Health Check**: http://localhost:5000/api/health
 
+### 5. Interactive Demos
+
+**Bell Shield Visualization** - Interactive 4D quantum security demo:
+```bash
+python bell_shield_demo.py
+```
+
+Controls:
+- **[S]** - Toggle Bell Shield (|00⟩ + |11⟩ entanglement)
+- **[A]** - Toggle Attack Mode
+- Watch how quantum entanglement protects data against attacks!
+
+**Quantum Principles Demo** - Command-line demonstration:
+```bash
+python quantum_demo.py
+```
+
 ## 📚 Documentation
 
 ### Project Structure
@@ -96,6 +113,8 @@ QuantumShield/
 ├── file_monitor.py           # File integrity monitoring
 ├── malware_detector.py       # Process and malware detection
 ├── ransomware_detector.py    # Ransomware protection
+├── quantum_demo.py           # Quantum Bell state demonstration
+├── bell_shield_demo.py       # Interactive Bell Shield visualization
 ├── main.py                   # Legacy main entry point
 ├── test_api.py              # API testing suite
 ├── start_services.sh        # Service startup script
