@@ -40,6 +40,11 @@ DASHBOARD_HTML = """
 <html>
 <head>
     <title>QuantumShield Dashboard</title>
+    <!-- Vercel Web Analytics -->
+    <script>
+      window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
