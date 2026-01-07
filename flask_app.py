@@ -660,8 +660,8 @@ def get_stats():
     try:
         stats = {
             'total_events': db.query(SecurityEvent).count(),
-            'monitored_files': db.query(MonitoredFile).filter(MonitoredFile.is_active == True).count(),
-            'suspicious_processes': db.query(ProcessEvent).filter(ProcessEvent.is_suspicious == True).count(),
+            'monitored_files': db.query(MonitoredFile).filter(MonitoredFile.is_active.is_(True)).count(),
+            'suspicious_processes': db.query(ProcessEvent).filter(ProcessEvent.is_suspicious.is_(True)).count(),
             'quantum_measurements': db.query(QuantumMeasurement).count(),
             'total_threats': db.query(ThreatSignature).count(),
             'automated_responses': db.query(AutomatedResponse).count(),
@@ -888,7 +888,7 @@ def get_suspicious_processes():
     """Get all suspicious processes"""
     db = get_db()
     try:
-        processes = db.query(ProcessEvent).filter(ProcessEvent.is_suspicious == True).order_by(desc(ProcessEvent.timestamp)).all()
+        processes = db.query(ProcessEvent).filter(ProcessEvent.is_suspicious.is_(True)).order_by(desc(ProcessEvent.timestamp)).all()
         return jsonify([{
             'id': p.id,
             'timestamp': p.timestamp.isoformat(),
@@ -1198,7 +1198,10 @@ def deploy_readiness():
         if suspicious_count > 0:
             reasons.append(f"{suspicious_count} suspicious process(es) flagged")
         if recent_events > 0:
-            reasons.append(f"{recent_events} security event(s) detected in the last hour")
+            reasons.append(
+                f"{recent_events} security event(s) detected in the last "
+                f"{DEPLOY_READINESS_LOOKBACK_HOURS} hour(s)"
+            )
         
         safe_to_deploy = len(reasons) == 0
         
