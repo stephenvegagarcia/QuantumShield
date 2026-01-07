@@ -42,6 +42,17 @@ cd QuantumShield
 pip install -e .
 ```
 
+### Serverless-friendly slim bundle
+
+If your serverless platform rejects the full project because of package size (due to Streamlit/Qiskit), create a minimal Flask-only zip:
+
+```bash
+bash create_serverless_zip.sh
+# optionally pass a custom name: bash create_serverless_zip.sh my_bundle.zip
+```
+
+The script bundles only the Flask API files and a trimmed `requirements.txt` (no Qiskit/Streamlit), producing a much smaller archive ready for upload.
+
 ### 2. Database Configuration
 
 ```bash
