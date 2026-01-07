@@ -1178,6 +1178,41 @@ def health_check():
         'service': 'QuantumShield API'
     })
 
+@app.route('/api/deploy/readiness')
+def deploy_readiness():
+    """Recommend whether it's safe to deploy right now"""
+    db = get_db()
+    try:
+        state = get_or_create_system_state(db)
+        suspicious_count = db.query(ProcessEvent).filter(ProcessEvent.is_suspicious == True).count()
+        recent_events = db.query(SecurityEvent).filter(
+            SecurityEvent.timestamp >= datetime.utcnow() - timedelta(hours=1)
+        ).count()
+        
+        reasons = []
+        if not state.quantum_intact:
+            reasons.append("Quantum integrity is not intact")
+        if suspicious_count > 0:
+            reasons.append(f"{suspicious_count} suspicious process(es) flagged")
+        if recent_events > 0:
+            reasons.append(f"{recent_events} security event(s) detected in the last hour")
+        
+        safe_to_deploy = len(reasons) == 0
+        
+        return jsonify({
+            'safe_to_deploy': safe_to_deploy,
+            'recommendation': 'deploy' if safe_to_deploy else 'hold',
+            'reasons': reasons,
+            'metrics': {
+                'suspicious_processes': suspicious_count,
+                'recent_events_last_hour': recent_events,
+                'quantum_intact': state.quantum_intact
+            },
+            'timestamp': datetime.utcnow().isoformat()
+        })
+    finally:
+        db.close()
+
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))
     
