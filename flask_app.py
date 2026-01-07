@@ -1198,10 +1198,7 @@ def deploy_readiness():
         if suspicious_count > 0:
             reasons.append(f"{suspicious_count} suspicious process(es) flagged")
         if recent_events > 0:
-            reasons.append(
-                f"{recent_events} security event(s) detected in the last "
-                f"{DEPLOY_READINESS_LOOKBACK_HOURS} hour(s)"
-            )
+            reasons.append(f"{recent_events} security event(s) detected in the last {DEPLOY_READINESS_LOOKBACK_HOURS} hour(s)")
         
         safe_to_deploy = len(reasons) == 0
         
