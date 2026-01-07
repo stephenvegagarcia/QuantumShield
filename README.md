@@ -272,6 +272,10 @@ FLASK_ENV=production                                   # Optional
 FLASK_DEBUG=False                                      # Optional
 ```
 
+### Can I keep collaborating after deployment?
+
+Yes. Deploying QuantumShield just runs the current build—it doesn't lock the code. Keep using branches and pull requests for ongoing work, and redeploy whenever changes are merged. Use separate dev/stage/prod environments so collaborators can test safely before updating production.
+
 ## 🔒 Security Considerations
 
 ### Defense-in-Depth Principle
