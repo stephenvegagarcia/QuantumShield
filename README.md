@@ -263,6 +263,13 @@ EXPOSE 5000 8501
 CMD ["./start_services.sh"]
 ```
 
+### Deploying to Vercel
+
+1. Install the Vercel CLI and log in: `npm i -g vercel && vercel login`
+2. Deploy with the provided configuration: `vercel --prod`
+3. Set `DATABASE_URL` in your Vercel project (PostgreSQL recommended). If not set, the deployment will fall back to a temporary SQLite database at `/tmp/quantum_security.db`.
+4. The Flask app in `flask_app.py` is exposed through `vercel.json`, routing all requests to the API.
+
 ### Environment Variables
 
 ```bash
