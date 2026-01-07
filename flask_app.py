@@ -1191,6 +1191,7 @@ def deploy_readiness():
         recent_events = db.query(SecurityEvent).filter(
             SecurityEvent.timestamp >= datetime.utcnow() - timedelta(hours=DEPLOY_READINESS_LOOKBACK_HOURS)
         ).count()
+        lookback_unit = "hour" if DEPLOY_READINESS_LOOKBACK_HOURS == 1 else "hours"
         
         reasons = []
         if not state.quantum_intact:
@@ -1198,7 +1199,7 @@ def deploy_readiness():
         if suspicious_count > 0:
             reasons.append(f"{suspicious_count} suspicious process(es) flagged")
         if recent_events > 0:
-            reasons.append(f"{recent_events} security event(s) detected in the last {DEPLOY_READINESS_LOOKBACK_HOURS} hour(s)")
+            reasons.append(f"{recent_events} security event(s) detected in the last {DEPLOY_READINESS_LOOKBACK_HOURS} {lookback_unit}")
         
         safe_to_deploy = len(reasons) == 0
         
