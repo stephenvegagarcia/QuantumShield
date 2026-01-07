@@ -15,6 +15,9 @@ from cybersecurity_training import CybersecurityTraining
 app = Flask(__name__)
 CORS(app)
 
+# Deployment readiness configuration
+DEPLOY_READINESS_LOOKBACK_HOURS = int(os.getenv('DEPLOY_READINESS_LOOKBACK_HOURS', '1'))
+
 # Initialize AES-256 encryption
 encryptor = AESEncryption()
 
@@ -1184,9 +1187,9 @@ def deploy_readiness():
     db = get_db()
     try:
         state = get_or_create_system_state(db)
-        suspicious_count = db.query(ProcessEvent).filter(ProcessEvent.is_suspicious == True).count()
+        suspicious_count = db.query(ProcessEvent).filter(ProcessEvent.is_suspicious.is_(True)).count()
         recent_events = db.query(SecurityEvent).filter(
-            SecurityEvent.timestamp >= datetime.utcnow() - timedelta(hours=1)
+            SecurityEvent.timestamp >= datetime.utcnow() - timedelta(hours=DEPLOY_READINESS_LOOKBACK_HOURS)
         ).count()
         
         reasons = []
@@ -1210,6 +1213,11 @@ def deploy_readiness():
             },
             'timestamp': datetime.utcnow().isoformat()
         })
+    except Exception as exc:
+        return jsonify({
+            'error': 'Failed to evaluate deployment readiness',
+            'details': str(exc)
+        }), 500
     finally:
         db.close()
 
