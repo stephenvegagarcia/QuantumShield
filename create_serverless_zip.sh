@@ -32,7 +32,7 @@ for item in "${INCLUDE_ITEMS[@]}"; do
   fi
 done
 
-cp -r templates "$WORKDIR/templates"
+[ -d "templates" ] && cp -r templates "$WORKDIR/templates"
 cp requirements-serverless.txt "$WORKDIR/requirements.txt"
 
 pushd "$WORKDIR" > /dev/null
