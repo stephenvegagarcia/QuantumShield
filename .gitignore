@@ -13,6 +13,7 @@ build/
 *.db
 *.sqlite
 *.sqlite3
+quantum_voter_network.json
 
 # Virtual environments
 venv/
