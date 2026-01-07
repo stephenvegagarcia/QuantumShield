@@ -72,6 +72,7 @@ The API will be available at `http://localhost:5000`
 ### System Stats
 - `GET /api/stats` - Get overall system statistics
 - `GET /api/health` - Health check endpoint
+- `GET /api/deploy/readiness` - Deployment readiness recommendation
 
 ### Security Events
 - `GET /api/events/recent?limit=10` - Get recent security events

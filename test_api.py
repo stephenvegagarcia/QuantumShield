@@ -29,6 +29,13 @@ def test_stats():
     print(f"Status: {response.status_code}")
     print(f"Response: {json.dumps(response.json(), indent=2)}")
 
+def test_deploy_readiness():
+    """Test deployment readiness recommendation"""
+    print_section("Deployment Readiness")
+    response = requests.get(f"{BASE_URL}/api/deploy/readiness")
+    print(f"Status: {response.status_code}")
+    print(f"Response: {json.dumps(response.json(), indent=2)}")
+
 def test_create_event():
     """Test creating a security event"""
     print_section("Create Security Event")
@@ -151,6 +158,7 @@ def run_all_tests():
     try:
         test_health()
         test_stats()
+        test_deploy_readiness()
         test_create_event()
         test_get_events()
         test_create_quantum_measurement()

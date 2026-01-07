@@ -15,6 +15,9 @@ from cybersecurity_training import CybersecurityTraining
 app = Flask(__name__)
 CORS(app)
 
+# Deployment readiness configuration
+DEPLOY_READINESS_LOOKBACK_HOURS = int(os.getenv('DEPLOY_READINESS_LOOKBACK_HOURS', '1'))
+
 # Initialize AES-256 encryption
 encryptor = AESEncryption()
 
@@ -657,8 +660,8 @@ def get_stats():
     try:
         stats = {
             'total_events': db.query(SecurityEvent).count(),
-            'monitored_files': db.query(MonitoredFile).filter(MonitoredFile.is_active == True).count(),
-            'suspicious_processes': db.query(ProcessEvent).filter(ProcessEvent.is_suspicious == True).count(),
+            'monitored_files': db.query(MonitoredFile).filter(MonitoredFile.is_active.is_(True)).count(),
+            'suspicious_processes': db.query(ProcessEvent).filter(ProcessEvent.is_suspicious.is_(True)).count(),
             'quantum_measurements': db.query(QuantumMeasurement).count(),
             'total_threats': db.query(ThreatSignature).count(),
             'automated_responses': db.query(AutomatedResponse).count(),
@@ -885,7 +888,7 @@ def get_suspicious_processes():
     """Get all suspicious processes"""
     db = get_db()
     try:
-        processes = db.query(ProcessEvent).filter(ProcessEvent.is_suspicious == True).order_by(desc(ProcessEvent.timestamp)).all()
+        processes = db.query(ProcessEvent).filter(ProcessEvent.is_suspicious.is_(True)).order_by(desc(ProcessEvent.timestamp)).all()
         return jsonify([{
             'id': p.id,
             'timestamp': p.timestamp.isoformat(),
@@ -1177,6 +1180,47 @@ def health_check():
         'timestamp': datetime.utcnow().isoformat(),
         'service': 'QuantumShield API'
     })
+
+@app.route('/api/deploy/readiness')
+def deploy_readiness():
+    """Recommend whether it's safe to deploy right now"""
+    db = get_db()
+    try:
+        state = get_or_create_system_state(db)
+        suspicious_count = db.query(ProcessEvent).filter(ProcessEvent.is_suspicious.is_(True)).count()
+        recent_events = db.query(SecurityEvent).filter(
+            SecurityEvent.timestamp >= datetime.utcnow() - timedelta(hours=DEPLOY_READINESS_LOOKBACK_HOURS)
+        ).count()
+        lookback_unit = "hour" if DEPLOY_READINESS_LOOKBACK_HOURS == 1 else "hours"
+        
+        reasons = []
+        if not state.quantum_intact:
+            reasons.append("Quantum integrity is not intact")
+        if suspicious_count > 0:
+            reasons.append(f"{suspicious_count} suspicious process(es) flagged")
+        if recent_events > 0:
+            reasons.append(f"{recent_events} security event(s) detected in the last {DEPLOY_READINESS_LOOKBACK_HOURS} {lookback_unit}")
+        
+        safe_to_deploy = len(reasons) == 0
+        
+        return jsonify({
+            'safe_to_deploy': safe_to_deploy,
+            'recommendation': 'deploy' if safe_to_deploy else 'hold',
+            'reasons': reasons,
+            'metrics': {
+                'suspicious_processes': suspicious_count,
+                'recent_events_last_hour': recent_events,
+                'quantum_intact': state.quantum_intact
+            },
+            'timestamp': datetime.utcnow().isoformat()
+        })
+    except Exception as exc:
+        return jsonify({
+            'error': 'Failed to evaluate deployment readiness',
+            'details': str(exc)
+        }), 500
+    finally:
+        db.close()
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))

@@ -122,6 +122,7 @@ QuantumShield/
 ### System
 - `GET /api/health` - Health check
 - `GET /api/stats` - System statistics
+- `GET /api/deploy/readiness` - Deployment readiness recommendation
 
 ### Security Events
 - `GET /api/events/recent?limit=10` - Recent events
