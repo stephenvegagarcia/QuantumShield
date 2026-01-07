@@ -25,7 +25,11 @@ INCLUDE_ITEMS=(
 )
 
 for item in "${INCLUDE_ITEMS[@]}"; do
-  cp -r "$item" "$WORKDIR"/
+  if [ -d "$item" ]; then
+    cp -r "$item" "$WORKDIR"/
+  else
+    cp "$item" "$WORKDIR"/
+  fi
 done
 
 cp -r templates "$WORKDIR/templates"
